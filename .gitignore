@@ -38,3 +38,5 @@ captures/
 
 # Keystore files
 *.jks
+
+app/src/main/res/drawable/sample_*.jpg
