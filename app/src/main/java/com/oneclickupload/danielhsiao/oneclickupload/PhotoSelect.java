@@ -25,15 +25,6 @@ public class PhotoSelect extends AppCompatActivity {
         }
         permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
 
-        GridView photoGrid = (GridView) findViewById(R.id.gridview);
-        photoGrid.setAdapter(new ImageAdapter(this));
-
-        photoGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(PhotoSelect.this, "" + position, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     @Override
