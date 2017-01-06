@@ -4,6 +4,9 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -19,12 +22,14 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int requestResult = 1;
+    private static final int REQUEST_RESULT = 2;
+    private static final int PICK_IMAGE = 3;
     private Context c;
     int permissionCheck;
     @Override
@@ -35,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if(permissionCheck != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestResult);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_RESULT);
         }
         permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
@@ -52,6 +57,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final Button buttonAdd = (Button) findViewById(R.id.buttonAdd);
+        buttonAdd.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                runOpenGalleryIntent();
+            }
+        });
     }
 
     private void createNoCameraDialog(){
@@ -59,6 +72,13 @@ public class MainActivity extends AppCompatActivity {
         builder.setMessage("This device does not have a default camera app. Please install a camera app from the Play Store.");
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void runOpenGalleryIntent(){
+        Intent intentGallery = new Intent();
+        intentGallery.setType("image/*");
+        intentGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intentGallery, PICK_IMAGE);
     }
 
     String mCurrentPhotoPath;
@@ -94,12 +114,32 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == REQUEST_TAKE_PHOTO){
-            if(resultCode == RESULT_OK){
-                galleryAddPic();
-                mCurrentPhotoPath = null;
+        switch (requestCode) {
+            case REQUEST_IMAGE_CAPTURE: {
+                if (resultCode == RESULT_OK) {
+                    galleryAddPic();
+                    mCurrentPhotoPath = null;
+                }
+            }
+            case PICK_IMAGE: {
+                if(resultCode == RESULT_OK){
+                    if(data != null && data.getData() != null){
+                        Uri selectedImageUri = data.getData();
+                        Bitmap bitmap = getBitmap(selectedImageUri);
+                    }
+                }
             }
         }
+    }
+
+    private Bitmap getBitmap(Uri uri){
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            return bitmap;
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void galleryAddPic() {
