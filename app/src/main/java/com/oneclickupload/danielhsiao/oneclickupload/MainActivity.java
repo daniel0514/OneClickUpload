@@ -13,11 +13,14 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -32,39 +35,66 @@ public class MainActivity extends AppCompatActivity {
     private static final int PICK_IMAGE = 3;
     private Context c;
     int permissionCheck;
+
+    private Button buttonCamera;
+    private Button buttonAdd;
+    private DrawerLayout layoutDrawer;
+    private ListView listDrawer;
+    private String[] groups;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_select);
         c = getApplicationContext();
 
+        checkPermission();
+
+        layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        listDrawer = (ListView) findViewById(R.id.left_drawer);
+
+        buttonCamera = (Button) findViewById(R.id.buttonCamera);
+        initializeButton(buttonCamera, R.id.buttonCamera);
+        buttonAdd = (Button) findViewById(R.id.buttonAdd);
+        initializeButton(buttonAdd, R.id.buttonAdd);
+    }
+
+    private boolean checkPermission(){
         permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if(permissionCheck != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_RESULT);
         }
         permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return (permissionCheck == PackageManager.PERMISSION_GRANTED);
+    }
 
-        final Button buttonCamera = (Button) findViewById(R.id.buttonCamera);
-        buttonCamera.setOnClickListener(new View.OnClickListener(){
+    private void initializeButton(Button button, int id){
+        switch(id) {
+            case R.id.buttonCamera :{
+                button.setOnClickListener(new View.OnClickListener(){
 
-            @Override
-            public void onClick(View v) {
-                if(c.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-                    dispatchTakePictureIntent();
-                } else {
-                    createNoCameraDialog();
-                }
+                    @Override
+                    public void onClick(View v) {
+                        if(c.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                            dispatchTakePictureIntent();
+                        } else {
+                            createNoCameraDialog();
+                        }
+                    }
+                });
+                break;
             }
-        });
+            case R.id.buttonAdd :{
+                button.setOnClickListener(new View.OnClickListener(){
 
-        final Button buttonAdd = (Button) findViewById(R.id.buttonAdd);
-        buttonAdd.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View v) {
-                runOpenGalleryIntent();
+                    @Override
+                    public void onClick(View v) {
+                        runOpenGalleryIntent();
+                    }
+                });
+                break;
             }
-        });
+        }
     }
 
     private void createNoCameraDialog(){
