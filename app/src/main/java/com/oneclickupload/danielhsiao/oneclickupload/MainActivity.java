@@ -4,9 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -23,10 +21,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
+import com.wdullaer.swipeactionadapter.SwipeActionAdapter.SwipeActionListener;
+import com.wdullaer.swipeactionadapter.SwipeDirection;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,7 +43,9 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonAdd;
     private DrawerLayout layoutDrawer;
     private ListView listDrawer;
+    private ListView listUploads;
     private String[] groups;
+    private SwipeActionAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +58,75 @@ public class MainActivity extends AppCompatActivity {
         layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listDrawer = (ListView) findViewById(R.id.left_drawer);
 
+        listUploads = (ListView) findViewById(R.id.listView1);
+        setUpSwipeList();
+
+
         buttonCamera = (Button) findViewById(R.id.buttonCamera);
         initializeButton(buttonCamera, R.id.buttonCamera);
         buttonAdd = (Button) findViewById(R.id.buttonAdd);
         initializeButton(buttonAdd, R.id.buttonAdd);
+    }
+
+    private void setUpSwipeList(){
+        String[] content = new String[20];
+        for (int i=0;i<20;i++) content[i] = "Row "+(i+1);
+        ArrayAdapter<String> stringAdapter = new ArrayAdapter<>(
+                this,
+                R.layout.row_big,
+                R.id.text,
+                new ArrayList<>(Arrays.asList(content))
+        );
+        mAdapter = new SwipeActionAdapter(stringAdapter);
+        mAdapter.setSwipeActionListener(new SwipeActionListener(){
+            @Override
+            public boolean hasActions(int position, SwipeDirection direction){
+                if(direction.isLeft()) return true;
+                if(direction.isRight()) return true;
+                return false;
+            }
+
+            @Override
+            public boolean shouldDismiss(int position, SwipeDirection direction){
+                return direction == SwipeDirection.DIRECTION_NORMAL_LEFT;
+            }
+            @Override
+            public void onSwipe(int[] positionList, SwipeDirection[] directionList){
+                for(int i=0;i<positionList.length;i++) {
+                    SwipeDirection direction = directionList[i];
+                    int position = positionList[i];
+                    String dir = "";
+
+                    switch (direction) {
+                        case DIRECTION_FAR_LEFT:
+                            dir = "Far left";
+                            break;
+                        case DIRECTION_NORMAL_LEFT:
+                            dir = "Left";
+                            break;
+                        case DIRECTION_FAR_RIGHT:
+                            dir = "Far right";
+                            break;
+                        case DIRECTION_NORMAL_RIGHT:
+                            dir = "Right";
+                            break;
+                    }
+                    Toast.makeText(
+                            c,
+                            dir + " swipe Action triggered on " + mAdapter.getItem(position),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+        mAdapter.setDimBackgrounds(true);
+        mAdapter.setListView(listUploads);
+        listUploads.setAdapter(mAdapter);
+        mAdapter.addBackground(SwipeDirection.DIRECTION_FAR_LEFT,R.layout.row_bg_left_far)
+                .addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT,R.layout.row_bg_left)
+                .addBackground(SwipeDirection.DIRECTION_FAR_RIGHT,R.layout.row_bg_right_far)
+                .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT,R.layout.row_bg_right);
     }
 
     private boolean checkPermission(){
