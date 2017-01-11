@@ -29,35 +29,44 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int REQUEST_RESULT = 2;
-    private static final int PICK_IMAGE = 3;
-    private Context c;
-    int permissionCheck;
+    //Request Codes for Intents
+    private static final int REQUEST_PERMISSION = 1;
+    private static final int PICK_IMAGE = 2;
+    private static final int REQUEST_IMAGE_CAPTURE = 3;
 
+    //Activity Variables
+    private Context context;
+    int hasPermission_ES_W; //Permission for External Storage Write
+
+    //UI Variables
+        //Buttons
     private Button buttonCamera;
     private Button buttonAdd;
+        //Drawers
     private DrawerLayout layoutDrawer;
     private ListView listDrawer;
+        //ListView Variables
     private ListView listUploads;
-    private String[] groups;
-    private SwipeActionAdapter mAdapter;
+    private ArrayAdapter<String> stringAdapter;
+    private SwipeActionAdapter swipeAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_select);
-        c = getApplicationContext();
+        context = getApplicationContext();
 
+        //Check if App has permission
         checkPermission();
 
+        //Setup Drawer
         layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listDrawer = (ListView) findViewById(R.id.left_drawer);
 
+        //Setup Main Screen List
         listUploads = (ListView) findViewById(R.id.listView1);
         setUpSwipeList();
 
@@ -68,28 +77,34 @@ public class MainActivity extends AppCompatActivity {
         initializeButton(buttonAdd, R.id.buttonAdd);
     }
 
+    /**
+     *  The main method to set up the Swipe Action List that contains the upload list
+     */
     private void setUpSwipeList(){
-        String[] content = new String[20];
-        for (int i=0;i<20;i++) content[i] = "Row "+(i+1);
-        ArrayAdapter<String> stringAdapter = new ArrayAdapter<>(
+        //Setup the String Adapter to contain the strings of the list
+        stringAdapter = new ArrayAdapter<>(
                 this,
                 R.layout.row_big,
                 R.id.text,
-                new ArrayList<>(Arrays.asList(content))
+                new ArrayList<String>()
         );
-        mAdapter = new SwipeActionAdapter(stringAdapter);
-        mAdapter.setSwipeActionListener(new SwipeActionListener(){
+        //Setup the Swipe Adapter to handle swipe actions to elements of the list
+        swipeAdapter = new SwipeActionAdapter(stringAdapter);
+        swipeAdapter.setSwipeActionListener(new SwipeActionListener(){
+            // Return true for directions for permitted swipe
+            // Return false to forbid swipes for certain direction.
             @Override
             public boolean hasActions(int position, SwipeDirection direction){
-                if(direction.isLeft()) return true;
-                if(direction.isRight()) return true;
-                return false;
+                return (direction.isLeft() || direction.isRight());
             }
 
+            // Return true for directions to dismiss the item in the list
             @Override
             public boolean shouldDismiss(int position, SwipeDirection direction){
-                return direction == SwipeDirection.DIRECTION_NORMAL_LEFT;
+                return direction == SwipeDirection.DIRECTION_NORMAL_RIGHT;
             }
+
+            // Triggered by Swipe Action. Implements the actions for swipes in different directions.
             @Override
             public void onSwipe(int[] positionList, SwipeDirection[] directionList){
                 for(int i=0;i<positionList.length;i++) {
@@ -112,41 +127,52 @@ public class MainActivity extends AppCompatActivity {
                             break;
                     }
                     Toast.makeText(
-                            c,
-                            dir + " swipe Action triggered on " + mAdapter.getItem(position),
+                            context,
+                            dir + " swipe Action triggered on " + swipeAdapter.getItem(position),
                             Toast.LENGTH_SHORT
                     ).show();
-                    mAdapter.notifyDataSetChanged();
+                    swipeAdapter.notifyDataSetChanged();
                 }
             }
         });
-        mAdapter.setDimBackgrounds(true);
-        mAdapter.setListView(listUploads);
-        listUploads.setAdapter(mAdapter);
-        mAdapter.addBackground(SwipeDirection.DIRECTION_FAR_LEFT,R.layout.row_bg_left_far)
+        swipeAdapter.setDimBackgrounds(true);
+        swipeAdapter.setListView(listUploads);
+        listUploads.setAdapter(swipeAdapter);
+        // Set the background of the swipe directions
+        swipeAdapter.addBackground(SwipeDirection.DIRECTION_FAR_LEFT,R.layout.row_bg_left_far)
                 .addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT,R.layout.row_bg_left)
                 .addBackground(SwipeDirection.DIRECTION_FAR_RIGHT,R.layout.row_bg_right_far)
                 .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT,R.layout.row_bg_right);
     }
 
+    /**
+     * Check if the App has appropriate permissions. If not, request permission. The result of the request will be
+     * saved in hasPermission_ES_W variable.
+     * @return Boolean : TRUE if Permission Granted; FALSE otherwise.
+     */
     private boolean checkPermission(){
-        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(permissionCheck != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_RESULT);
+        hasPermission_ES_W = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if(hasPermission_ES_W != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION);
         }
-        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        return (permissionCheck == PackageManager.PERMISSION_GRANTED);
+        hasPermission_ES_W = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return (hasPermission_ES_W == PackageManager.PERMISSION_GRANTED);
     }
 
+    /**
+     *  Initialize buttons by adding appropriate listeners
+     * @param button the button to be initialized
+     * @param id    the id of the button
+     */
     private void initializeButton(Button button, int id){
         switch(id) {
             case R.id.buttonCamera :{
+                //Setting the onClickListener for the Camera Button to open default camera app
                 button.setOnClickListener(new View.OnClickListener(){
-
                     @Override
                     public void onClick(View v) {
-                        if(c.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-                            dispatchTakePictureIntent();
+                        if(context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                            runIntentImageCapture();
                         } else {
                             createNoCameraDialog();
                         }
@@ -155,11 +181,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.buttonAdd :{
+                //Setting the onClickListener for the Add Button to open the default gallery app for image selection
                 button.setOnClickListener(new View.OnClickListener(){
 
                     @Override
                     public void onClick(View v) {
-                        runOpenGalleryIntent();
+                        runIntentOpenGallery();
                     }
                 });
                 break;
@@ -167,6 +194,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Method for creating a dialog to show the users that no default camera app is installed on the device
+     */
     private void createNoCameraDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("This device does not have a default camera app. Please install a camera app from the Play Store.");
@@ -174,64 +204,95 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void runOpenGalleryIntent(){
+    /**
+     * Create an Intent to open the gallery app.
+     */
+    private void runIntentOpenGallery(){
         Intent intentGallery = new Intent();
-        intentGallery.setType("image/*");
+        Uri uri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/CAMERA/");
+        intentGallery.setDataAndType(uri, "image/*");
         intentGallery.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intentGallery, PICK_IMAGE);
     }
 
-    String mCurrentPhotoPath;
+    // The path of the image captured by the camera app
+    private String mCurrentPhotoPath;
 
+    /**
+     *  The method for creating a temporary image file that is captured by default camera app
+     * @return File: The image file captured by the camera pp
+     * @throws IOException : thrown when the camera fails to save the captured image
+     */
     private File createImageFile() throws IOException {
+        //timeStamp is used for unique file name
         String timeStamp = new SimpleDateFormat("yyyMMdd_HHmmss").format(new Date());
         String imageFileName = "IMG_" + timeStamp;
+        //Use getExternalStoragePublicDirectory instead of getExternalStorageDirectory so the image captured by
+        //the camera actually saved to the SDCard instead of the app directory.
         File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         File storageDir = new File(root.getAbsolutePath() + "/CAMERA/");
         File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        //Sets mCurrentPhotoPath for other uses.
         mCurrentPhotoPath = image.getAbsolutePath();
         return image;
     }
 
-    static final int REQUEST_TAKE_PHOTO = 1;
-    private void dispatchTakePictureIntent(){
+    /**
+     * Creates an intent to launch the default camera app.
+     */
+    private void runIntentImageCapture(){
         Intent intentTakePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(intentTakePicture.resolveActivity(getPackageManager()) != null){
             File photoFile = null;
             try{
                 photoFile = createImageFile();
             } catch (IOException ex){
-                Toast.makeText(c, "IOException in making image file", Toast.LENGTH_LONG);
+                Toast.makeText(context, "IOException in making image file", Toast.LENGTH_LONG);
             }
             if(photoFile != null){
-                Uri photoURI = FileProvider.getUriForFile(c, "com.oneclickupload.danielhsiao.fileprovider", photoFile);
-                System.out.println(photoURI.getPath());
+                Uri photoURI = FileProvider.getUriForFile(context, "com.oneclickupload.danielhsiao.fileprovider", photoFile);
                 intentTakePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(intentTakePicture, REQUEST_TAKE_PHOTO);
+                startActivityForResult(intentTakePicture, REQUEST_IMAGE_CAPTURE);
             }
         }
     }
 
+    /**
+     * Method for handling activity results
+     * @param requestCode   The Request Code indicting which intent the request is for
+     * @param resultCode    The result code; whether the result is successful or not
+     * @param data          The data of the result
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
+            // Handles the image capture intent by adding the captured image to the gallery
             case REQUEST_IMAGE_CAPTURE: {
                 if (resultCode == RESULT_OK) {
                     galleryAddPic();
+                    //No Longer need the photo path so we set it to null
                     mCurrentPhotoPath = null;
                 }
             }
+            // Handles the image selection intent
             case PICK_IMAGE: {
                 if(resultCode == RESULT_OK){
                     if(data != null && data.getData() != null){
                         Uri selectedImageUri = data.getData();
                         Bitmap bitmap = getBitmap(selectedImageUri);
+                        String name = selectedImageUri.getLastPathSegment();
+                        stringAdapter.add(name);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Method to transform URI into Bitmap
+     * @param uri : the URI of the bitmap file
+     * @return Bitmap : The bitmap file
+     */
     private Bitmap getBitmap(Uri uri){
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
@@ -242,6 +303,9 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+    /**
+     * Method for adding captured image to the gallery
+     */
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = new File(mCurrentPhotoPath);
