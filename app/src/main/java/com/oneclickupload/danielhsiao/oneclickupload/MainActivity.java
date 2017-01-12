@@ -20,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.ExpandableListView;
 
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter.SwipeActionListener;
@@ -30,6 +31,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     //Request Codes for Intents
@@ -47,11 +50,14 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonAdd;
         //Drawers
     private DrawerLayout layoutDrawer;
-    private ListView listDrawer;
+    private ExpandableListView listDrawer;
         //ListView Variables
     private ListView listUploads;
     private ArrayAdapter<String> stringAdapter;
     private SwipeActionAdapter swipeAdapter;
+        //Drawer Data Variable
+    private List<String> listDataHeader;
+    private HashMap<String, List<String>> listDataChild;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +70,10 @@ public class MainActivity extends AppCompatActivity {
 
         //Setup Drawer
         layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        listDrawer = (ListView) findViewById(R.id.left_drawer);
+        listDrawer = (ExpandableListView) findViewById(R.id.left_drawer);
+        addDrawerData();
+        ExpandableListAdapter listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
+        listDrawer.setAdapter(listAdapter);
 
         //Setup Main Screen List
         listUploads = (ListView) findViewById(R.id.listView1);
@@ -77,6 +86,40 @@ public class MainActivity extends AppCompatActivity {
         initializeButton(buttonAdd, R.id.buttonAdd);
     }
 
+    private void addDrawerData(){
+        listDataHeader = new ArrayList<>();
+        listDataChild = new HashMap<>();
+
+        listDataHeader.add("Profile 1");
+        listDataHeader.add("Profile 2");
+        listDataHeader.add("Profile 3");
+        listDataHeader.add("Profile 4");
+
+        List<String> profile1 = new ArrayList<String>();
+        profile1.add("Facebook");
+        profile1.add("Twitter");
+        profile1.add("Instagram");
+
+        List<String> profile2 = new ArrayList<String>();
+        profile2.add("Snapchat");
+        profile2.add("Twitter");
+        profile2.add("Facebook");
+
+        List<String> profile3 = new ArrayList<String>();
+        profile3.add("Facebook");
+        profile3.add("Facebook");
+        profile3.add("Facebook");
+
+        List<String> profile4 = new ArrayList<String>();
+        profile4.add("Whatsapp");
+        profile4.add("Facebook");
+        profile4.add("Instagram");
+
+        listDataChild.put(listDataHeader.get(0), profile1);
+        listDataChild.put(listDataHeader.get(1), profile2);
+        listDataChild.put(listDataHeader.get(2), profile3);
+        listDataChild.put(listDataHeader.get(3), profile4);
+    }
     /**
      *  The main method to set up the Swipe Action List that contains the upload list
      */
