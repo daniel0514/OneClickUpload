@@ -48,12 +48,19 @@ android:layout_height="match_parent">
             android:layout_alignParentBottom="true"
             android:text="Camera" />
     </RelativeLayout>
-    <ExpandableListView  android:id="@+id/left_drawer"
-        android:layout_width="240dp"
+    <LinearLayout
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:layout_gravity="start"
-        android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        android:background="#80a9ed"/>
+        android:layout_width="240dp">
+        <include layout="@layout/drawer_header"/>
+        <ExpandableListView  android:id="@+id/left_drawer"
+            android:layout_width="240dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"
+            android:background="#ffffff"/>
+    </LinearLayout>
 </android.support.v4.widget.DrawerLayout>
