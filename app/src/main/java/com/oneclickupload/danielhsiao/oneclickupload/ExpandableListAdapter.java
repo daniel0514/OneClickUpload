@@ -1,5 +1,6 @@
 package com.oneclickupload.danielhsiao.oneclickupload;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -9,6 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 
@@ -20,12 +24,16 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     private List<String> listHeaders;
     private HashMap<String, List<String>> listDataChild;
+    private RadioGroup radioGroup;
+    private int selectedIndex;
 
     public ExpandableListAdapter(Context context, List<String> listDataHeader,
                                  HashMap<String, List<String>> listChildData) {
         this.context = context;
         this.listHeaders = listDataHeader;
         this.listDataChild = listChildData;
+
+        radioGroup = new RadioGroup(context);
     }
 
     @Override
@@ -33,6 +41,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         return listDataChild.get(listHeaders.get(groupPosition))
                 .get(childPosititon);
     }
+
+
+
 
     @Override
     public long getChildId(int groupPosition, int childPosition) {
@@ -55,6 +66,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
                 .findViewById(R.id.lblListItem);
 
         txtListChild.setText(childText);
+
         return convertView;
     }
 
@@ -80,7 +92,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getGroupView(int groupPosition, boolean isExpanded,
+    public View getGroupView(final int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
         String headerTitle = (String) getGroup(groupPosition);
         if (convertView == null) {
@@ -94,8 +106,19 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         lblListHeader.setTypeface(null, Typeface.BOLD);
         lblListHeader.setText(headerTitle);
 
+        RadioButton rb = (RadioButton) convertView.findViewById(R.id.radioButton);
+        rb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedIndex = groupPosition;
+                notifyDataSetChanged();
+            }
+        });
+        rb.setChecked(selectedIndex == groupPosition);
+
         return convertView;
     }
+
 
     @Override
     public boolean hasStableIds() {

@@ -19,6 +19,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 import android.widget.ExpandableListView;
 
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         //Drawer Data Variable
     private List<String> listDataHeader;
     private HashMap<String, List<String>> listDataChild;
+    ExpandableListAdapter listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listDrawer = (ExpandableListView) findViewById(R.id.left_drawer);
         addDrawerData();
-        ExpandableListAdapter listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
+        listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
         listDrawer.setAdapter(listAdapter);
 
         //Setup Main Screen List
@@ -94,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
         listDataHeader.add("Profile 2");
         listDataHeader.add("Profile 3");
         listDataHeader.add("Profile 4");
-
         List<String> profile1 = new ArrayList<String>();
         profile1.add("Facebook");
         profile1.add("Twitter");

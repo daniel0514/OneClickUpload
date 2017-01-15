@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp"
-    android:background="#2f74e2"
-    android:weightSum="22">
-    <TextView
-        android:id="@+id/lblListHeader"
-        android:layout_width="0dp"
-        android:layout_weight="18"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
-        android:textSize="17dp"
-        android:textColor="#f9f93d" />
-    <RadioButton
-        android:layout_width="0dp"
-        android:layout_weight="4"
-        android:layout_height="fill_parent"
-        android:focusable="false"/>
-</LinearLayout>
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="#2f74e2"
+        android:weightSum="22">
+        <TextView
+            android:id="@+id/lblListHeader"
+            android:layout_width="0dp"
+            android:layout_weight="18"
+            android:layout_height="wrap_content"
+            android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+            android:textSize="17dp"
+            android:textColor="#f9f93d" />
+        <RadioButton
+            android:id="@+id/radioButton"
+            android:layout_width="0dp"
+            android:layout_weight="4"
+            android:layout_height="fill_parent"
+            android:focusable="false"/>
+    </LinearLayout>
