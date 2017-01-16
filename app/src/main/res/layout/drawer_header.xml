@@ -5,37 +5,7 @@
     android:background="#2f74e2"
     android:orientation="vertical"
     android:weightSum="1">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_weight="2">
-        <TextView
-            android:id="@+id/selectedProfile"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:textColor="#ffffff"
-            android:text="Profile"
-            android:textSize="50sp"
-            android:textStyle="bold"
-            />
-        <TextView
-            android:id="@+id/profileContent"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:textColor="#ffffff"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="5dp"
-            android:text="mediaIconHere"
-            android:textSize="14sp"
-            android:textStyle="normal"
-            />
-    </LinearLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -47,7 +17,8 @@
             android:padding="20dp"
             android:src="@drawable/setting24"
             android:background="@null"
-            android:id="@+id/buttonSetting"/>
+            android:id="@+id/buttonSetting"
+            android:onClick="startSettingIntent"/>
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,6 +26,36 @@
             android:src="@drawable/addlist24"
             android:id="@+id/addProfileButton"
             android:background="@null"
-            android:layout_alignParentRight="true"/>
+            android:layout_alignParentRight="true"
+            android:onClick="startNewProfileIntent"/>
     </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
+        <TextView
+            android:id="@+id/selectedProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:textColor="#ffffff"
+            android:text="Profile"
+            android:textSize="50sp"
+            android:textStyle="bold"
+            />
+        <TextView
+            android:id="@+id/profileContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#ffffff"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="5dp"
+            android:text="mediaIconHere"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            />
+    </LinearLayout>
 </RelativeLayout>

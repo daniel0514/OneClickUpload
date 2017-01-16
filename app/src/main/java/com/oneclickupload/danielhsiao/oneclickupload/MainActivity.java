@@ -238,22 +238,16 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             }
-            case R.id.buttonSetting:{
-                //Setting the onClickListener for the Add Button to open the default gallery app for image selection
-                button.setOnClickListener(new View.OnClickListener(){
-
-                    @Override
-                    public void onClick(View v) {
-                        startSettingIntent();
-                    }
-                });
-                break;
-            }
         }
     }
 
-    private void startSettingIntent(){
-        Intent intent = new Intent(this, SettingActivity.class);
+    public void startSettingIntent(View view){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+    public void startNewProfileIntent(View view){
+        Intent intent = new Intent(this, NewProfileActivity.class);
         startActivity(intent);
     }
 
