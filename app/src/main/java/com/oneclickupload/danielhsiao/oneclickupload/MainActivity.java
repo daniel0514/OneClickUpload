@@ -18,9 +18,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 import android.widget.ExpandableListView;
 
@@ -53,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         //Drawers
     private DrawerLayout layoutDrawer;
     private ExpandableListView listDrawer;
+    private ImageButton buttonSetting;
         //ListView Variables
     private ListView listUploads;
     private ArrayAdapter<String> stringAdapter;
@@ -87,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
         initializeButton(buttonCamera, R.id.buttonCamera);
         buttonAdd = (Button) findViewById(R.id.buttonAdd);
         initializeButton(buttonAdd, R.id.buttonAdd);
+        buttonSetting = (ImageButton) findViewById(R.id.buttonSetting);
+        initializeButton(buttonSetting, R.id.buttonSetting);
     }
 
     private void addDrawerData(){
@@ -209,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
      * @param button the button to be initialized
      * @param id    the id of the button
      */
-    private void initializeButton(Button button, int id){
+    private void initializeButton(View button, int id){
         switch(id) {
             case R.id.buttonCamera :{
                 //Setting the onClickListener for the Camera Button to open default camera app
@@ -236,7 +238,23 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             }
+            case R.id.buttonSetting:{
+                //Setting the onClickListener for the Add Button to open the default gallery app for image selection
+                button.setOnClickListener(new View.OnClickListener(){
+
+                    @Override
+                    public void onClick(View v) {
+                        startSettingIntent();
+                    }
+                });
+                break;
+            }
         }
+    }
+
+    private void startSettingIntent(){
+        Intent intent = new Intent(this, SettingActivity.class);
+        startActivity(intent);
     }
 
     /**
