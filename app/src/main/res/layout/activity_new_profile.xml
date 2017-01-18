@@ -10,4 +10,63 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.oneclickupload.danielhsiao.oneclickupload.NewProfileActivity">
 
+    <!-- Prevent First EditText from gaining focus-->
+    <LinearLayout
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:layout_width="0px"
+        android:layout_height="0px"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:weightSum="10">
+
+        <TextView
+            android:text="Profile Name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textProfileName" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:id="@+id/editText" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="20">
+            <TextView
+                android:text="Accounts"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:id="@+id/textAccounts"
+                android:layout_weight="18"/>
+
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/addlist24"
+                android:id="@+id/addAccountButton"
+                android:background="@null"
+                android:layout_alignParentRight="true"
+                android:layout_weight="2"/>
+        </LinearLayout>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+            <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/listViewAccount"
+                android:descendantFocusability="beforeDescendants"></ListView></ScrollView>
+    </LinearLayout>
 </RelativeLayout>
