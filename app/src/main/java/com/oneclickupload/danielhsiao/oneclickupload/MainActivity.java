@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION = 1;
     private static final int PICK_IMAGE = 2;
     private static final int REQUEST_IMAGE_CAPTURE = 3;
+    private static final int REQUEST_PROFILE = 4;
 
     //Activity Variables
     private Context context;
@@ -248,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startNewProfileIntent(View view){
         Intent intent = new Intent(this, NewProfileActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_PROFILE);
     }
 
     /**

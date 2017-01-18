@@ -4,7 +4,7 @@ package com.oneclickupload.danielhsiao.oneclickupload;
  * Created by Daniel Hsiao on 2017-01-17.
  */
 
-public class Account {
+public class Account{
     public final int FACEBOOK_ACCOUNT = 1;
     public final int TWITTER_ACCOUNT = 2;
     private Integer id;

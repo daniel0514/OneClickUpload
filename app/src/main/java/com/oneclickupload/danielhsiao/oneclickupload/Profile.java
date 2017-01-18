@@ -8,7 +8,7 @@ import java.util.List;
  */
 
 public class Profile {
-    private int profileID;
+    private Integer profileID;
     private String profileName;
     private List<Account> accounts;
 
@@ -16,6 +16,19 @@ public class Profile {
         this.profileID = profileID;
         profileName = name;
         accounts = new ArrayList<>();
+    }
+    public Profile(String name){
+        this.profileID = null;
+        profileName = name;
+        accounts = new ArrayList<>();
+    }
+
+    public int getProfileID(){
+        return profileID;
+    }
+
+    public void setProfileID(Integer id){
+        profileID = id;
     }
 
     public int getCount (){

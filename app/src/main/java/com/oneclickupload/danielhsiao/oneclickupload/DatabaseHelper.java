@@ -25,9 +25,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String COL_ACCOUNT = "ACCOUNT";
     public static final String COL_PASSWORD = "PASSWORD";
 
-    private static final String CREATE_TABLES = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_PROFILE + "("    + COL_ID + " INTEGER PRIMARY KEY,"
-                                                                                                            + COL_NAME + " TEXT NOT NULL);\n"+
-                                                "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_PROFILE_CHILD + "("  + COL_PROFILE_ID + " INTEGER,"
+    private static final String CREATE_TABLES1 = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_PROFILE + "("    + COL_ID + " INTEGER PRIMARY KEY,"
+                                                                                                            + COL_NAME + " TEXT NOT NULL);";
+    private static final String CREATE_TABLES2 =  "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_PROFILE_CHILD + "("  + COL_PROFILE_ID + " INTEGER,"
                                                                                                                 + COL_ID + " INTEGER PRIMARY KEY, "
                                                                                                                 + COL_API + " INTEGER NOT NULL, "
                                                                                                                 + COL_ACCOUNT + " TEXT NOT NULL,"
@@ -46,7 +46,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLES);
+        db.execSQL(CREATE_TABLES1);
+        db.execSQL(CREATE_TABLES2);
     }
 
     @Override
@@ -59,21 +60,22 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         ContentValues values = new ContentValues();
         values.put(COL_NAME, p.getName());
         db.insert(TABLE_NAME_PROFILE, null, values);
-        profileID = getLastInsertedRowID();
+        profileID = getLastInsertedRowID(TABLE_NAME_PROFILE);
 
         for(Account a : p.getAccounts()){
             addAccount(a, profileID);
         }
+        p.setProfileID(profileID);
         return profileID;
     }
 
-    private Integer getLastInsertedRowID(){
+    private Integer getLastInsertedRowID(String table){
         Integer id = null;
         SQLiteDatabase db = this.getReadableDatabase();
-        String selectID = "SELECT SELECT last_insert_rowid()";
+        String selectID = "SELECT last_insert_rowid() FROM " + table;
         Cursor cursor = db.rawQuery(selectID, null);
         if(cursor.moveToFirst()){
-            id = cursor.getInt(1);
+            id = cursor.getInt(0);
         }
         return id;
     }
@@ -86,7 +88,12 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.put(COL_ACCOUNT, a.getAccount_id());
         values.put(COL_PASSWORD, a.getPassword());
         db.insert(TABLE_NAME_PROFILE_CHILD, null, values);
-        Integer id = getLastInsertedRowID();
+
+        String selectID = "SELECT * FROM " + TABLE_NAME_PROFILE_CHILD;
+        Cursor cursor = db.rawQuery(selectID, null);
+        int count = cursor.getCount();
+
+        Integer id = getLastInsertedRowID(TABLE_NAME_PROFILE_CHILD);
         a.setID(id);
         return id;
     }
@@ -98,16 +105,16 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         Cursor cursor = db.rawQuery(select, null);
         if(cursor.moveToFirst()){
             do{
-                int id = cursor.getInt(1);
-                String name = cursor.getString(2);
+                int id = cursor.getInt(0);
+                String name = cursor.getString(1);
                 Profile profile = new Profile(id, name);
 
                 Cursor accountCursor = db.query(TABLE_NAME_PROFILE_CHILD, new String[]{COL_ID, COL_API, COL_ACCOUNT, COL_PASSWORD}, COL_ID + "=?", new String[]{String.valueOf(id)}, null, null, null,null);
                 if(accountCursor.moveToFirst()){
                     do{
-                        int accountType = cursor.getInt(1);
-                        String accountID = cursor.getString(2);
-                        String password = cursor.getString(3);
+                        int accountType = cursor.getInt(0);
+                        String accountID = cursor.getString(1);
+                        String password = cursor.getString(2);
                         profile.addAccount(new Account(accountType, accountID, password));
                     } while(accountCursor.moveToNext());
                 }
