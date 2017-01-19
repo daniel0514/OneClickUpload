@@ -36,7 +36,11 @@ public class Profile {
     }
 
     public void addAccount(Account a){
-        accounts.add(a);
+        this.accounts.add(a);
+    };
+
+    public void setAccounts(List<Account> accounts){
+        this.accounts = accounts;
     }
 
     public String getName(){

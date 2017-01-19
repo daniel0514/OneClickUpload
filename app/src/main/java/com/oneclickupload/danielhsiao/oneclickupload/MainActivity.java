@@ -59,9 +59,13 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> stringAdapter;
     private SwipeActionAdapter swipeAdapter;
         //Drawer Data Variable
-    private List<String> listDataHeader;
-    private HashMap<String, List<String>> listDataChild;
-    ExpandableListAdapter listAdapter;
+    private List<String> listDataHeader = new ArrayList<>();
+    private HashMap<String, List<String>> listDataChild = new HashMap<>();
+    private ExpandableListAdapter listAdapter;
+        //Database
+    private DatabaseHelper db;
+
+    private List<Profile> profiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +76,16 @@ public class MainActivity extends AppCompatActivity {
         //Check if App has permission
         checkPermission();
 
+        //Setup DB
+        db = new DatabaseHelper(context);
+        profiles = db.getProfiles();
+
         //Setup Drawer
         layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listDrawer = (ExpandableListView) findViewById(R.id.left_drawer);
-        addDrawerData();
         listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
         listDrawer.setAdapter(listAdapter);
+        addDrawerData(profiles);
 
         //Setup Main Screen List
         listUploads = (ListView) findViewById(R.id.listView1);
@@ -92,38 +100,39 @@ public class MainActivity extends AppCompatActivity {
         initializeButton(buttonSetting, R.id.buttonSetting);
     }
 
-    private void addDrawerData(){
-        listDataHeader = new ArrayList<>();
-        listDataChild = new HashMap<>();
+    private void addDrawerData(List<Profile> profiles){
+        for(Profile p : profiles){
+            listAdapter.addProfile(p);
+        }
 
-        listDataHeader.add("Profile 1");
-        listDataHeader.add("Profile 2");
-        listDataHeader.add("Profile 3");
-        listDataHeader.add("Profile 4");
-        List<String> profile1 = new ArrayList<String>();
-        profile1.add("Facebook");
-        profile1.add("Twitter");
-        profile1.add("Instagram");
-
-        List<String> profile2 = new ArrayList<String>();
-        profile2.add("Snapchat");
-        profile2.add("Twitter");
-        profile2.add("Facebook");
-
-        List<String> profile3 = new ArrayList<String>();
-        profile3.add("Facebook");
-        profile3.add("Facebook");
-        profile3.add("Facebook");
-
-        List<String> profile4 = new ArrayList<String>();
-        profile4.add("Whatsapp");
-        profile4.add("Facebook");
-        profile4.add("Instagram");
-
-        listDataChild.put(listDataHeader.get(0), profile1);
-        listDataChild.put(listDataHeader.get(1), profile2);
-        listDataChild.put(listDataHeader.get(2), profile3);
-        listDataChild.put(listDataHeader.get(3), profile4);
+//        listDataHeader.add("Profile 1");
+//        listDataHeader.add("Profile 2");
+//        listDataHeader.add("Profile 3");
+//        listDataHeader.add("Profile 4");
+//        List<String> profile1 = new ArrayList<String>();
+//        profile1.add("Facebook");
+//        profile1.add("Twitter");
+//        profile1.add("Instagram");
+//
+//        List<String> profile2 = new ArrayList<String>();
+//        profile2.add("Snapchat");
+//        profile2.add("Twitter");
+//        profile2.add("Facebook");
+//
+//        List<String> profile3 = new ArrayList<String>();
+//        profile3.add("Facebook");
+//        profile3.add("Facebook");
+//        profile3.add("Facebook");
+//
+//        List<String> profile4 = new ArrayList<String>();
+//        profile4.add("Whatsapp");
+//        profile4.add("Facebook");
+//        profile4.add("Instagram");
+//
+//        listDataChild.put(listDataHeader.get(0), profile1);
+//        listDataChild.put(listDataHeader.get(1), profile2);
+//        listDataChild.put(listDataHeader.get(2), profile3);
+//        listDataChild.put(listDataHeader.get(3), profile4);
     }
     /**
      *  The main method to set up the Swipe Action List that contains the upload list
@@ -340,6 +349,15 @@ public class MainActivity extends AppCompatActivity {
                         Bitmap bitmap = getBitmap(selectedImageUri);
                         String name = selectedImageUri.getLastPathSegment();
                         stringAdapter.add(name);
+                    }
+                }
+            }
+            case REQUEST_PROFILE: {
+                if(resultCode == RESULT_OK){
+                    if(data != null){
+                        int profileID = data.getIntExtra("ProfileID", -1);
+                        Profile p = db.getProfileByID(profileID);
+                        listAdapter.addProfile(p);
                     }
                 }
             }

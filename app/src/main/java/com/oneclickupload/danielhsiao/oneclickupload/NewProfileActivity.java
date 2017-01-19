@@ -1,7 +1,9 @@
 package com.oneclickupload.danielhsiao.oneclickupload;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -70,6 +72,7 @@ public class NewProfileActivity extends AppCompatActivity {
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                setResult(Activity.RESULT_CANCELED);
                                 finish();
                             }
                         })
@@ -80,13 +83,14 @@ public class NewProfileActivity extends AppCompatActivity {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Profile p = createProfile();
+                int id = createProfile();
+                setResult(Activity.RESULT_OK, getIntent().putExtra("ProfileID", id));
                 finish();
             }
         });
     }
 
-    public Profile createProfile(){
+    public int createProfile(){
         String profileName = editTextProfileName.getText().toString();
         Profile p = new Profile(profileName);
         int count = accountTypes.size();
@@ -97,7 +101,7 @@ public class NewProfileActivity extends AppCompatActivity {
             Account a = new Account(accountType, accountID, password);
             p.addAccount(a);
         }
-        db.addProfile(p);
-        return p;
+        int profileID = db.addProfile(p);
+        return profileID;
     }
 }

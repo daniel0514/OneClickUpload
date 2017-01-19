@@ -37,7 +37,17 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
                 .get(childPosition);
     }
 
-
+    public void addProfile(Profile p){
+        String profileName = p.getName();
+        List<String> accountNames = new ArrayList<>();
+        for(Account a : p.getAccounts()){
+            int accountType = a.getAccountType();
+            accountNames.add(a.getAPIName(accountType));
+        }
+        listHeaders.add(profileName);
+        listDataChild.put(profileName, accountNames);
+        notifyDataSetChanged();
+    }
 
 
     @Override

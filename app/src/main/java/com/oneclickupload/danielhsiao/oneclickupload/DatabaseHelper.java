@@ -101,23 +101,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public List<Profile> getProfiles(){
         List<Profile> profiles = new ArrayList<Profile>();
         SQLiteDatabase db = this.getReadableDatabase();
-        String select = "SEELCT * FROM " + TABLE_NAME_PROFILE;
+        String select = "SELECT * FROM " + TABLE_NAME_PROFILE;
         Cursor cursor = db.rawQuery(select, null);
         if(cursor.moveToFirst()){
             do{
                 int id = cursor.getInt(0);
                 String name = cursor.getString(1);
                 Profile profile = new Profile(id, name);
-
-                Cursor accountCursor = db.query(TABLE_NAME_PROFILE_CHILD, new String[]{COL_ID, COL_API, COL_ACCOUNT, COL_PASSWORD}, COL_ID + "=?", new String[]{String.valueOf(id)}, null, null, null,null);
-                if(accountCursor.moveToFirst()){
-                    do{
-                        int accountType = cursor.getInt(0);
-                        String accountID = cursor.getString(1);
-                        String password = cursor.getString(2);
-                        profile.addAccount(new Account(accountType, accountID, password));
-                    } while(accountCursor.moveToNext());
-                }
+                profile.setAccounts(getAccountsByProfileID(id));
                 profiles.add(profile);
 
             } while(cursor.moveToNext());
@@ -125,4 +116,41 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return profiles;
     }
 
+    public Profile getLastInsertedProfile(){
+        int profileID = getLastInsertedRowID(TABLE_NAME_PROFILE);
+        Profile p = getProfileByID(profileID);
+        return p;
+    }
+
+    public Profile getProfileByID(int id){
+        Profile p;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor profileCursor = db.query(TABLE_NAME_PROFILE, new String[]{COL_ID, COL_NAME}, COL_ID + "=?", new String[]{String.valueOf(id)}, null, null, null,null);
+        if(profileCursor.moveToFirst()){
+            String profileName = profileCursor.getString(1);
+            p = new Profile(id, profileName);
+
+            List<Account> accounts = getAccountsByProfileID(id);
+            p.setAccounts(accounts);
+            return p;
+        } else {
+            return null;
+        }
+    }
+
+    public List<Account> getAccountsByProfileID(int profileID){
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Account> accounts = new ArrayList<>();
+        Cursor accountCursor = db.query(TABLE_NAME_PROFILE_CHILD, new String[]{COL_ID, COL_API, COL_ACCOUNT, COL_PASSWORD, COL_PROFILE_ID}, COL_PROFILE_ID + "=?", new String[]{String.valueOf(profileID)}, null, null, null,null);
+        if(accountCursor.moveToFirst()){
+            do{
+                int aID = accountCursor.getInt(0);
+                int accountType = accountCursor.getInt(1);
+                String accountID = accountCursor.getString(2);
+                String password = accountCursor.getString(3);
+                accounts.add(new Account(aID, accountType, accountID, password));
+            } while(accountCursor.moveToNext());
+        }
+        return accounts;
+    }
 }

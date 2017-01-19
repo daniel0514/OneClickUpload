@@ -18,6 +18,13 @@ public class Account{
         this.password = password;
     }
 
+    public Account(int id, int accountType, String account_id, String password){
+        this.id = id;
+        this.accountType = accountType;
+        this.account_id = account_id;
+        this.password = password;
+    }
+
     public void setID(int id){
         this.id = id;
     }
@@ -32,6 +39,17 @@ public class Account{
 
     public String getPassword(){
         return password;
+    }
+
+    public String getAPIName(int id){
+        switch(id){
+            case(FACEBOOK_ACCOUNT):
+                return "Facebook";
+            case(TWITTER_ACCOUNT):
+                return "Twitter";
+            default:
+                return "Unknown API";
+        }
     }
 
 }
