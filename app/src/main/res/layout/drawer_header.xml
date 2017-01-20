@@ -46,16 +46,12 @@
             android:textSize="50sp"
             android:textStyle="bold"
             />
-        <TextView
-            android:id="@+id/profileContent"
+        <LinearLayout
+            android:id="@+id/linearHeaderImages"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="5dp"
-            android:text="mediaIconHere"
-            android:textSize="14sp"
-            android:textStyle="normal"
-            />
+            android:orientation="horizontal"
+            android:padding="10dp">
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

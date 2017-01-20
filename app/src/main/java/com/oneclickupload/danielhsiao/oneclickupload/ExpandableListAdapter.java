@@ -3,11 +3,14 @@ package com.oneclickupload.danielhsiao.oneclickupload;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -21,10 +24,14 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     private List<Profile> profiles;
     private int selectedIndex;
+    private LinearLayout headerImages;
+    private TextView headerTextView;
 
-    public ExpandableListAdapter(Context context, List<Profile> profiles) {
+    public ExpandableListAdapter(Context context, List<Profile> profiles, TextView headerTextView, LinearLayout headerImages) {
         this.context = context;
         this.profiles = profiles;
+        this.headerTextView = headerTextView;
+        this.headerImages = headerImages;
     }
 
     @Override
@@ -104,12 +111,28 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             @Override
             public void onClick(View v) {
                 selectedIndex = groupPosition;
+                setHeader();
                 notifyDataSetChanged();
             }
         });
         rb.setChecked(selectedIndex == groupPosition);
-
+        setHeader();
         return convertView;
+    }
+
+    private void setHeader(){
+        headerTextView.setText(profiles.get(selectedIndex).getName());
+        headerImages.removeAllViews();
+        for(Account a : profiles.get(selectedIndex).getAccounts()){
+            ImageView imageView = new ImageView(context);
+            if(a.getAccountType() == Account.FACEBOOK_ACCOUNT){
+                imageView.setBackgroundResource(R.drawable.facebookon);
+            } else if(a.getAccountType() == Account.TWITTER_ACCOUNT){
+                imageView.setBackgroundResource(R.drawable.twitteron);
+            }
+            imageView.setLayoutParams(new LinearLayout.LayoutParams(100, 100, 1));
+            headerImages.addView(imageView);
+        }
     }
 
 

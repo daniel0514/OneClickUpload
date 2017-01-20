@@ -19,7 +19,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ExpandableListView;
 
@@ -80,17 +83,19 @@ public class MainActivity extends AppCompatActivity {
         db = new DatabaseHelper(context);
         profiles = db.getProfiles();
 
+        TextView drawerHeader = (TextView) findViewById(R.id.selectedProfile);
+        LinearLayout drawerHeaderImages = (LinearLayout) findViewById(R.id.linearHeaderImages);
+
         //Setup Drawer
         layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listDrawer = (ExpandableListView) findViewById(R.id.left_drawer);
-        listAdapter = new ExpandableListAdapter(this, profiles);
+        listAdapter = new ExpandableListAdapter(this, profiles, drawerHeader, drawerHeaderImages);
         listDrawer.setAdapter(listAdapter);
-        //addDrawerData(profiles);
+
 
         //Setup Main Screen List
         listUploads = (ListView) findViewById(R.id.listView1);
         setUpSwipeList();
-
 
         buttonCamera = (Button) findViewById(R.id.buttonCamera);
         initializeButton(buttonCamera, R.id.buttonCamera);

@@ -5,8 +5,8 @@ package com.oneclickupload.danielhsiao.oneclickupload;
  */
 
 public class Account{
-    public final int FACEBOOK_ACCOUNT = 1;
-    public final int TWITTER_ACCOUNT = 2;
+    public final static int FACEBOOK_ACCOUNT = 1;
+    public final static int TWITTER_ACCOUNT = 2;
     private Integer id;
     private String account_id;
     private String password;
