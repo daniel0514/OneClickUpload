@@ -83,9 +83,9 @@ public class MainActivity extends AppCompatActivity {
         //Setup Drawer
         layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listDrawer = (ExpandableListView) findViewById(R.id.left_drawer);
-        listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
+        listAdapter = new ExpandableListAdapter(this, profiles);
         listDrawer.setAdapter(listAdapter);
-        addDrawerData(profiles);
+        //addDrawerData(profiles);
 
         //Setup Main Screen List
         listUploads = (ListView) findViewById(R.id.listView1);
