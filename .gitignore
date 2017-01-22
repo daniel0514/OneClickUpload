@@ -40,3 +40,4 @@ captures/
 *.jks
 
 app/src/main/res/drawable/sample_*.jpg
+app/src/main/res/values/hiddenstrings.xml
