@@ -19,24 +19,36 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ExpandableListView;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.facebook.share.ShareApi;
+import com.facebook.share.model.SharePhoto;
+import com.facebook.share.model.SharePhotoContent;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter.SwipeActionListener;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
+
+
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
     //Request Codes for Intents
@@ -62,11 +74,14 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> stringAdapter;
     private SwipeActionAdapter swipeAdapter;
         //Drawer Data Variable
-    private List<String> listDataHeader = new ArrayList<>();
-    private HashMap<String, List<String>> listDataChild = new HashMap<>();
     private ExpandableListAdapter listAdapter;
         //Database
     private DatabaseHelper db;
+
+    //Facebook API
+    LoginManager mLoginManager;
+    CallbackManager mCallbackManager;
+    List<String> facebookPermissions= Arrays.asList("publish_actions");
 
     private List<Profile> profiles;
 
@@ -75,6 +90,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_select);
         context = getApplicationContext();
+
+        FacebookSdk.sdkInitialize(context);
+        AppEventsLogger.activateApp(getApplication());
+        mCallbackManager = CallbackManager.Factory.create();
+        mLoginManager = LoginManager.getInstance();
+        mLoginManager.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Toast.makeText(context, "Successfully Logged In", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+
+            }
+        });
+        mLoginManager.logInWithPublishPermissions(this, facebookPermissions);
 
         //Check if App has permission
         checkPermission();
@@ -105,40 +142,6 @@ public class MainActivity extends AppCompatActivity {
         initializeButton(buttonSetting, R.id.buttonSetting);
     }
 
-    private void addDrawerData(List<Profile> profiles){
-        for(Profile p : profiles){
-            listAdapter.addProfile(p);
-        }
-
-//        listDataHeader.add("Profile 1");
-//        listDataHeader.add("Profile 2");
-//        listDataHeader.add("Profile 3");
-//        listDataHeader.add("Profile 4");
-//        List<String> profile1 = new ArrayList<String>();
-//        profile1.add("Facebook");
-//        profile1.add("Twitter");
-//        profile1.add("Instagram");
-//
-//        List<String> profile2 = new ArrayList<String>();
-//        profile2.add("Snapchat");
-//        profile2.add("Twitter");
-//        profile2.add("Facebook");
-//
-//        List<String> profile3 = new ArrayList<String>();
-//        profile3.add("Facebook");
-//        profile3.add("Facebook");
-//        profile3.add("Facebook");
-//
-//        List<String> profile4 = new ArrayList<String>();
-//        profile4.add("Whatsapp");
-//        profile4.add("Facebook");
-//        profile4.add("Instagram");
-//
-//        listDataChild.put(listDataHeader.get(0), profile1);
-//        listDataChild.put(listDataHeader.get(1), profile2);
-//        listDataChild.put(listDataHeader.get(2), profile3);
-//        listDataChild.put(listDataHeader.get(3), profile4);
-    }
     /**
      *  The main method to set up the Swipe Action List that contains the upload list
      */
@@ -345,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
                     //No Longer need the photo path so we set it to null
                     mCurrentPhotoPath = null;
                 }
+                return;
             }
             // Handles the image selection intent
             case PICK_IMAGE: {
@@ -353,9 +357,10 @@ public class MainActivity extends AppCompatActivity {
                         Uri selectedImageUri = data.getData();
                         Bitmap bitmap = getBitmap(selectedImageUri);
                         String name = selectedImageUri.getLastPathSegment();
-                        stringAdapter.add(name);
+                        publishPhotoToFacebook(bitmap);
                     }
                 }
+                return;
             }
             case REQUEST_PROFILE: {
                 if(resultCode == RESULT_OK){
@@ -365,8 +370,23 @@ public class MainActivity extends AppCompatActivity {
                         listAdapter.addProfile(p);
                     }
                 }
+                return;
             }
         }
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
+        return;
+    }
+
+    private void publishPhotoToFacebook(Bitmap bitmap){
+        SharePhoto photo = new SharePhoto.Builder()
+                .setBitmap(bitmap)
+                .setCaption("Test Upload")
+                .build();
+
+        SharePhotoContent content = new SharePhotoContent.Builder()
+                .addPhoto(photo)
+                .build();
+        ShareApi.share(content, null);
     }
 
     /**

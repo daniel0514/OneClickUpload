@@ -3,7 +3,6 @@ package com.oneclickupload.danielhsiao.oneclickupload;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.Switch;
 import android.widget.TextView;
 
 
@@ -62,9 +60,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
         TextView txtListChild = (TextView) convertView
                 .findViewById(R.id.lblListItem);
-
-        Switch switchAccount = (Switch) convertView.findViewById(R.id.switchListItem);
-        switchAccount.setChecked(true);
+        LinearLayout listItemChildContent = (LinearLayout) convertView.findViewById(R.id.listItemChildContent);
 
         Account a = profiles.get(groupPosition).getAccount(childPosition);
         txtListChild.setText(a.getAPIName(a.getAccountType()));
