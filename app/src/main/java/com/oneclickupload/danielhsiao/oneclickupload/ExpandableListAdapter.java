@@ -42,6 +42,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         notifyDataSetChanged();
     }
 
+    public int getSelectedIndex(){
+        return selectedIndex;
+    }
 
     @Override
     public long getChildId(int groupPosition, int childPosition) {

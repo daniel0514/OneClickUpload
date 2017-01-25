@@ -31,6 +31,7 @@ import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.share.ShareApi;
+import com.facebook.share.Sharer;
 import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
 import com.twitter.sdk.android.tweetcomposer.TweetComposer;
@@ -48,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.sdk.android.Twitter;
@@ -56,10 +58,10 @@ import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
     //Request Codes for Intents
-    private static final int REQUEST_PERMISSION = 1;
-    private static final int PICK_IMAGE = 2;
-    private static final int REQUEST_IMAGE_CAPTURE = 3;
-    private static final int REQUEST_PROFILE = 4;
+    private static final int REQUEST_PERMISSION = 101;
+    private static final int PICK_IMAGE = 102;
+    private static final int REQUEST_IMAGE_CAPTURE = 103;
+    private static final int REQUEST_PROFILE = 104;
 
     //Activity Variables
     private Context context;
@@ -76,11 +78,15 @@ public class MainActivity extends AppCompatActivity {
         //ListView Variables
     private ListView listUploads;
     private ArrayAdapter<String> stringAdapter;
+    private ArrayList<String> uploadStrings = new ArrayList<>();
     private SwipeActionAdapter swipeAdapter;
         //Drawer Data Variable
     private ExpandableListAdapter listAdapter;
         //Database
     private DatabaseHelper db;
+
+    //Upload Queue
+    private LinkedList<Upload> uploadQueue = new LinkedList<>();
 
     //Facebook API
     LoginManager mLoginManager;
@@ -105,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
         mLoginManager.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Toast.makeText(context, "Successfully Logged In", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -158,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                 this,
                 R.layout.row_big,
                 R.id.text,
-                new ArrayList<String>()
+                uploadStrings
         );
         //Setup the Swipe Adapter to handle swipe actions to elements of the list
         swipeAdapter = new SwipeActionAdapter(stringAdapter);
@@ -167,13 +172,13 @@ public class MainActivity extends AppCompatActivity {
             // Return false to forbid swipes for certain direction.
             @Override
             public boolean hasActions(int position, SwipeDirection direction){
-                return (direction.isLeft() || direction.isRight());
+                return (direction == direction.DIRECTION_FAR_LEFT || direction == direction.DIRECTION_FAR_RIGHT);
             }
 
             // Return true for directions to dismiss the item in the list
             @Override
             public boolean shouldDismiss(int position, SwipeDirection direction){
-                return direction == SwipeDirection.DIRECTION_NORMAL_RIGHT;
+                return direction == SwipeDirection.DIRECTION_FAR_RIGHT;
             }
 
             // Triggered by Swipe Action. Implements the actions for swipes in different directions.
@@ -187,22 +192,20 @@ public class MainActivity extends AppCompatActivity {
                     switch (direction) {
                         case DIRECTION_FAR_LEFT:
                             dir = "Far left";
+                            startUpload(position);
                             break;
                         case DIRECTION_NORMAL_LEFT:
                             dir = "Left";
                             break;
                         case DIRECTION_FAR_RIGHT:
                             dir = "Far right";
+                            uploadQueue.remove(position);
+                            uploadStrings.remove(position);
                             break;
                         case DIRECTION_NORMAL_RIGHT:
                             dir = "Right";
                             break;
                     }
-                    Toast.makeText(
-                            context,
-                            dir + " swipe Action triggered on " + swipeAdapter.getItem(position),
-                            Toast.LENGTH_SHORT
-                    ).show();
                     swipeAdapter.notifyDataSetChanged();
                 }
             }
@@ -211,10 +214,8 @@ public class MainActivity extends AppCompatActivity {
         swipeAdapter.setListView(listUploads);
         listUploads.setAdapter(swipeAdapter);
         // Set the background of the swipe directions
-        swipeAdapter.addBackground(SwipeDirection.DIRECTION_FAR_LEFT,R.layout.row_bg_left_far)
-                .addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT,R.layout.row_bg_left)
-                .addBackground(SwipeDirection.DIRECTION_FAR_RIGHT,R.layout.row_bg_right_far)
-                .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT,R.layout.row_bg_right);
+        swipeAdapter.addBackground(SwipeDirection.DIRECTION_FAR_LEFT,R.layout.row_bg_left)
+                .addBackground(SwipeDirection.DIRECTION_FAR_RIGHT,R.layout.row_bg_right);
     }
 
     /**
@@ -362,10 +363,10 @@ public class MainActivity extends AppCompatActivity {
                 if(resultCode == RESULT_OK){
                     if(data != null && data.getData() != null){
                         Uri selectedImageUri = data.getData();
-                        Bitmap bitmap = getBitmap(selectedImageUri);
-                        String name = selectedImageUri.getLastPathSegment();
-                        publishPhotoToFacebook(bitmap);
-                        publishPhotoToTwitter(selectedImageUri);
+                        Upload upload = new Upload(profiles.get(listAdapter.getSelectedIndex()), selectedImageUri);
+                        uploadQueue.add(upload);
+                        uploadStrings.add(getResources().getString(R.string.initial_upload_string) + " with Profile: " + upload.getProfile().getName());
+                        stringAdapter.notifyDataSetChanged();
                     }
                 }
                 return;
@@ -385,14 +386,33 @@ public class MainActivity extends AppCompatActivity {
         return;
     }
 
-    private void publishPhotoToTwitter(Uri uri){
+    private void startUpload(int index){
+        Upload upload = uploadQueue.get(index);
+        for(Account a : upload.getProfile().getAccounts()){
+            switch(a.getAccountType()){
+                case Account.FACEBOOK_ACCOUNT:
+                    publishPhotoToFacebook(upload.getImageURI(), index);
+                    break;
+                case Account.TWITTER_ACCOUNT:
+                    publishPhotoToTwitter(upload.getImageURI(), index);
+                    break;
+            }
+        }
+    }
+
+    private void publishPhotoToTwitter(Uri uri, final int index){
+        updateText(index, Account.TWITTER_ACCOUNT, Upload.UPLOADING);
         TweetComposer.Builder builder = new TweetComposer.Builder(this)
                 .text("Test Upload")
                 .image(uri);
         builder.show();
+
     }
 
-    private void publishPhotoToFacebook(Bitmap bitmap){
+    private void publishPhotoToFacebook(Uri uri, final int index){
+        final int position = index;
+        updateText(index, Account.FACEBOOK_ACCOUNT, Upload.UPLOADING);
+        Bitmap bitmap = getBitmap(uri);
         SharePhoto photo = new SharePhoto.Builder()
                 .setBitmap(bitmap)
                 .setCaption("Test Upload")
@@ -401,7 +421,50 @@ public class MainActivity extends AppCompatActivity {
         SharePhotoContent content = new SharePhotoContent.Builder()
                 .addPhoto(photo)
                 .build();
-        ShareApi.share(content, null);
+        ShareApi.share(content, new FacebookCallback<Sharer.Result>() {
+            @Override
+            public void onSuccess(Sharer.Result result) {
+                updateText(position, Account.FACEBOOK_ACCOUNT, Upload.UPLOADED);
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+
+            }
+        });
+    }
+
+    private void updateText(int position, int accountType, int status){
+        String oldString = uploadStrings.get(position);
+        String newString = oldString;
+        if(status == Upload.UPLOADED){
+            if(accountType == Account.FACEBOOK_ACCOUNT){
+                newString = oldString.replace(getResources().getString(R.string.start_facebook_upload), getResources().getString(R.string.finish_facebook_upload));
+            } else if (accountType == Account.TWITTER_ACCOUNT){
+                newString = oldString.replace(getResources().getString(R.string.start_twitter_upload), getResources().getString(R.string.finish_twitter_upload));
+            }
+        } else if (status == Upload.UPLOADING) {
+            if(!oldString.contains("Status")){
+                if(accountType == Account.FACEBOOK_ACCOUNT){
+                    newString = getResources().getString(R.string.start_facebook_upload);
+                } else if (accountType == Account.TWITTER_ACCOUNT){
+                    newString = getResources().getString(R.string.start_twitter_upload);
+                }
+            } else {
+                if(accountType == Account.FACEBOOK_ACCOUNT){
+                    newString = oldString + "\n" + getResources().getString(R.string.start_facebook_upload);
+                } else if (accountType == Account.TWITTER_ACCOUNT){
+                    newString = oldString + "\n" + getResources().getString(R.string.start_twitter_upload);
+                }
+            }
+        }
+        uploadStrings.set(position, newString);
+        stringAdapter.notifyDataSetChanged();
     }
 
     /**

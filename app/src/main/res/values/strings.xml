@@ -77,4 +77,10 @@
         <item>1. Facebook</item>
         <item>2. Twitter</item>
     </string-array>
+
+    <string name="initial_upload_string">Swipe Left to Upload</string>
+    <string name="start_facebook_upload">Facebook Status: Uploading</string>
+    <string name="finish_facebook_upload">Facebook Status: Uploaded</string>
+    <string name="start_twitter_upload">Twitter Status: Uploading</string>
+    <string name="finish_twitter_upload">Twitter Status: Uploading</string>
 </resources>
