@@ -33,6 +33,7 @@ import com.facebook.login.LoginResult;
 import com.facebook.share.ShareApi;
 import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
+import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter.SwipeActionListener;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
@@ -49,6 +50,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
     //Request Codes for Intents
@@ -90,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_select);
         context = getApplicationContext();
+
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(getResources().getString(R.string.twitterApiID), getResources().getString(R.string.twitterSecretID));
+        Fabric.with(this, new Twitter(authConfig), new TweetComposer());
 
         FacebookSdk.sdkInitialize(context);
         AppEventsLogger.activateApp(getApplication());
@@ -358,6 +365,7 @@ public class MainActivity extends AppCompatActivity {
                         Bitmap bitmap = getBitmap(selectedImageUri);
                         String name = selectedImageUri.getLastPathSegment();
                         publishPhotoToFacebook(bitmap);
+                        publishPhotoToTwitter(selectedImageUri);
                     }
                 }
                 return;
@@ -375,6 +383,13 @@ public class MainActivity extends AppCompatActivity {
         }
         mCallbackManager.onActivityResult(requestCode, resultCode, data);
         return;
+    }
+
+    private void publishPhotoToTwitter(Uri uri){
+        TweetComposer.Builder builder = new TweetComposer.Builder(this)
+                .text("Test Upload")
+                .image(uri);
+        builder.show();
     }
 
     private void publishPhotoToFacebook(Bitmap bitmap){

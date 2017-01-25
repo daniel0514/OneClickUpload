@@ -36,6 +36,13 @@
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebookApiID" />
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="@string/twitterApiID"
+            />
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="@string/twitterApiID" />
 
         <activity android:name=".NewProfileActivity" />
 
