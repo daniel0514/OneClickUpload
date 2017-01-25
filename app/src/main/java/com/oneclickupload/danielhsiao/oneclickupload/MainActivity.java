@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int PICK_IMAGE = 102;
     private static final int REQUEST_IMAGE_CAPTURE = 103;
     private static final int REQUEST_PROFILE = 104;
+    private static final int TWEET_CODE = 105;
 
     //Activity Variables
     private Context context;
@@ -125,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         });
         mLoginManager.logInWithPublishPermissions(this, facebookPermissions);
 
+
         //Check if App has permission
         checkPermission();
 
@@ -152,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         initializeButton(buttonAdd, R.id.buttonAdd);
         buttonSetting = (ImageButton) findViewById(R.id.buttonSetting);
         initializeButton(buttonSetting, R.id.buttonSetting);
+
     }
 
     /**
@@ -180,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldDismiss(int position, SwipeDirection direction){
                 return direction == SwipeDirection.DIRECTION_FAR_RIGHT;
             }
-
             // Triggered by Swipe Action. Implements the actions for swipes in different directions.
             @Override
             public void onSwipe(int[] positionList, SwipeDirection[] directionList){
@@ -381,6 +383,23 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return;
             }
+            case TWEET_CODE: {
+                int index = 0;
+                double minTimeStamp = Double.MAX_VALUE;
+                Upload upload = null;
+                for (int i = 0; i < uploadQueue.size(); i++) {
+                    upload = uploadQueue.get(i);
+                    if (!upload.isUploadComplete() && upload.getStartTime() < minTimeStamp) {
+                        index = i;
+                        minTimeStamp = uploadQueue.get(i).getStartTime();
+                    }
+                }
+                if(resultCode == RESULT_OK) {
+                    setCompleted(index, Account.TWITTER_ACCOUNT);
+                } else if(resultCode == RESULT_CANCELED){
+                    updateText(index, Account.TWITTER_ACCOUNT, Upload.FAILED);
+                }
+            }
         }
         mCallbackManager.onActivityResult(requestCode, resultCode, data);
         return;
@@ -388,6 +407,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startUpload(int index){
         Upload upload = uploadQueue.get(index);
+        upload.setStartTime();
         for(Account a : upload.getProfile().getAccounts()){
             switch(a.getAccountType()){
                 case Account.FACEBOOK_ACCOUNT:
@@ -402,11 +422,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void publishPhotoToTwitter(Uri uri, final int index){
         updateText(index, Account.TWITTER_ACCOUNT, Upload.UPLOADING);
-        TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Test Upload")
-                .image(uri);
-        builder.show();
-
+        Intent tweetIntent = new TweetComposer.Builder(this)
+                .text("TestUpload")
+                .image(uri)
+                .createIntent();
+        startActivityForResult(tweetIntent, TWEET_CODE);
     }
 
     private void publishPhotoToFacebook(Uri uri, final int index){
@@ -424,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
         ShareApi.share(content, new FacebookCallback<Sharer.Result>() {
             @Override
             public void onSuccess(Sharer.Result result) {
-                updateText(position, Account.FACEBOOK_ACCOUNT, Upload.UPLOADED);
+                setCompleted(position, Account.FACEBOOK_ACCOUNT);
             }
 
             @Override
@@ -439,10 +459,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setCompleted(int index, int accountType){
+        updateText(index, accountType, Upload.UPLOADED);
+        uploadQueue.get(index).setUploaded(accountType, Boolean.valueOf(true));
+        if(uploadQueue.get(index).isUploadComplete()){
+            updateText(index, Account.ALL_ACCOUNTS, Upload.UPLOADED);
+        }
+    }
+
     private void updateText(int position, int accountType, int status){
         String oldString = uploadStrings.get(position);
         String newString = oldString;
-        if(status == Upload.UPLOADED){
+        if(accountType == Account.ALL_ACCOUNTS && status == Upload.UPLOADED) {
+            newString = newString + "\n" + getResources().getString(R.string.all_uploaded);
+        } else if(status == Upload.UPLOADED){
             if(accountType == Account.FACEBOOK_ACCOUNT){
                 newString = oldString.replace(getResources().getString(R.string.start_facebook_upload), getResources().getString(R.string.finish_facebook_upload));
             } else if (accountType == Account.TWITTER_ACCOUNT){
@@ -461,6 +491,12 @@ public class MainActivity extends AppCompatActivity {
                 } else if (accountType == Account.TWITTER_ACCOUNT){
                     newString = oldString + "\n" + getResources().getString(R.string.start_twitter_upload);
                 }
+            }
+        } else if (status == Upload.FAILED){
+            if(accountType == Account.FACEBOOK_ACCOUNT){
+                newString = oldString.replace(getResources().getString(R.string.start_facebook_upload), getResources().getString(R.string.failed_facebook_upload));
+            } else if (accountType == Account.TWITTER_ACCOUNT){
+                newString = oldString.replace(getResources().getString(R.string.start_twitter_upload), getResources().getString(R.string.failed_twitter_upload));
             }
         }
         uploadStrings.set(position, newString);
