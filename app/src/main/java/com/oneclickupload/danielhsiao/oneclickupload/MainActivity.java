@@ -71,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
 
     //UI Variables
     //Buttons
-    private Button buttonCamera;
-    private Button buttonAdd;
+    private ImageButton buttonCamera;
+    private ImageButton buttonAdd;
     //Drawers
     private ExpandableListView drawerEListView;
     private ExpandableListAdapter drawerEListAdapter;
@@ -148,9 +148,9 @@ public class MainActivity extends AppCompatActivity {
         listViewUploads = (ListView) findViewById(R.id.listView1);
         setUpSwipeList();
 
-        buttonCamera = (Button) findViewById(R.id.buttonCamera);
+        buttonCamera = (ImageButton) findViewById(R.id.buttonCamera);
         initializeButton(buttonCamera, R.id.buttonCamera);
-        buttonAdd = (Button) findViewById(R.id.buttonAdd);
+        buttonAdd = (ImageButton) findViewById(R.id.buttonAdd);
         initializeButton(buttonAdd, R.id.buttonAdd);
         buttonSetting = (ImageButton) findViewById(R.id.buttonSetting);
         initializeButton(buttonSetting, R.id.buttonSetting);
@@ -175,7 +175,13 @@ public class MainActivity extends AppCompatActivity {
             // Return false to forbid swipes for certain direction.
             @Override
             public boolean hasActions(int position, SwipeDirection direction){
-                return (direction == direction.DIRECTION_FAR_LEFT || direction == direction.DIRECTION_FAR_RIGHT);
+                if(uploadsList.get(position).getStartTime() != null && !uploadsList.get(position).isUploadComplete()){
+                    return false;
+                } else if(uploadsList.get(position).getStartTime() != null && uploadsList.get(position).isUploadComplete()){
+                    return direction == direction.DIRECTION_FAR_RIGHT;
+                } else {
+                    return (direction == direction.DIRECTION_FAR_LEFT || direction == direction.DIRECTION_FAR_RIGHT);
+                }
             }
 
             // Return true for directions to dismiss the item in the list
@@ -368,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
                         Uri selectedImageUri = data.getData();
                         Upload upload = new Upload(profiles.get(drawerEListAdapter.getSelectedIndex()), selectedImageUri);
                         uploadsList.add(upload);
-                        stringsUploads.add(getResources().getString(R.string.initial_upload_string) + " with Profile: " + upload.getProfile().getName());
+                        stringsUploads.add(getResources().getString(R.string.initial_upload_string) + "\nProfile: " + upload.getProfile().getName());
                         adapterUploads.notifyDataSetChanged();
                     }
                 }
@@ -417,13 +423,14 @@ public class MainActivity extends AppCompatActivity {
     private void startUpload(int index){
         Upload upload = uploadsList.get(index);
         upload.setStartTime();
-        for(Account a : upload.getProfile().getAccounts()){
+        Profile p = upload.getProfile();
+        for(Account a : p.getAccounts()){
             switch(a.getAccountType()){
                 case Account.FACEBOOK_ACCOUNT:
-                    publishPhotoToFacebook(upload.getImageURI(), index);
+                    publishPhotoToFacebook(upload.getImageURI(), index, p.getText());
                     break;
                 case Account.TWITTER_ACCOUNT:
-                    publishPhotoToTwitter(upload.getImageURI(), index);
+                    publishPhotoToTwitter(upload.getImageURI(), index, p.getText());
                     break;
             }
         }
@@ -433,12 +440,13 @@ public class MainActivity extends AppCompatActivity {
      * Tweet a photo using the Twitter API
      * @param uri   : URI of the selected image
      * @param index : Index of the selected upload task in the upload list view
+     * @param text : Text of the photo
      */
-    private void publishPhotoToTwitter(Uri uri, final int index){
+    private void publishPhotoToTwitter(Uri uri, final int index, String text){
         //Update the text on the listview to Twitter Status: Uploading
         updateText(index, Account.TWITTER_ACCOUNT, Upload.UPLOADING);
         Intent tweetIntent = new TweetComposer.Builder(this)
-                .text("TestUpload")
+                .text(text)
                 .image(uri)
                 .createIntent();
         startActivityForResult(tweetIntent, TWEET_CODE);
@@ -448,8 +456,9 @@ public class MainActivity extends AppCompatActivity {
      *  Post a Facebook photo using Facebook API
      * @param uri   : URI of the selected image
      * @param index : Index of the selected upload task ni the upload list view
+     * @param text : Text of the photo
      */
-    private void publishPhotoToFacebook(Uri uri, final int index){
+    private void publishPhotoToFacebook(Uri uri, final int index, String text){
         final int position = index;
         //Update the text on the listview to Facebook Status: Uploading
         updateText(index, Account.FACEBOOK_ACCOUNT, Upload.UPLOADING);
@@ -457,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         Bitmap bitmap = getBitmap(uri);
         SharePhoto photo = new SharePhoto.Builder()
                 .setBitmap(bitmap)
-                .setCaption("Test Upload")
+                .setCaption(text)
                 .build();
 
         SharePhotoContent content = new SharePhotoContent.Builder()

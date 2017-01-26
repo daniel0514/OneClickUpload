@@ -14,26 +14,30 @@ public class Profile {
     private String profileName;
     //The list of accounts in the profile
     private List<Account> accounts;
+    //Post Text
+    private String text;
 
     /**
      * Constructor for profile that is already in the database
      * @param profileID : The ID of the profile in the database
      * @param name      : The profile name
      */
-    public Profile(int profileID, String name){
+    public Profile(int profileID, String name, String text){
         this.profileID = profileID;
         profileName = name;
         accounts = new ArrayList<>();
+        this.text = text;
     }
 
     /**
      * Constructor for profile that is not yet persisted
      * @param name : The name of the profile
      */
-    public Profile(String name){
+    public Profile(String name, String text){
         this.profileID = null;
         profileName = name;
         accounts = new ArrayList<>();
+        this.text = text;
     }
 
     public int getProfileID(){
@@ -54,7 +58,15 @@ public class Profile {
      */
     public void addAccount(Account a){
         this.accounts.add(a);
-    };
+    }
+
+    public String getText(){
+        return text;
+    }
+
+    public void setText(String text){
+        this.text = text;
+    }
 
     /**
      * Replace the whole list of accounts in the profile

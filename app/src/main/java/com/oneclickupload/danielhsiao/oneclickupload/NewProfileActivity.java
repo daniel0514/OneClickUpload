@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class NewProfileActivity extends AppCompatActivity {
     private Button buttonCancel;
     private Button buttonSave;
     private EditText editTextProfileName;
+    private EditText editTextUploadText;
     private LinearLayout scrollLinear;
     private List<Spinner> accountTypes = new ArrayList<>();
     private List<EditText> accountIDs = new ArrayList<>();
@@ -53,6 +55,7 @@ public class NewProfileActivity extends AppCompatActivity {
         buttonCancel = (Button) findViewById(R.id.buttonCancel);
         buttonSave = (Button) findViewById(R.id.buttonSave);
         editTextProfileName = (EditText) findViewById(R.id.editText);
+        editTextUploadText = (EditText) findViewById(R.id.editTextText);
         scrollLinear = (LinearLayout) findViewById(R.id.linearScrollView);
         //Database for persistence
         db = new DatabaseHelper(context);
@@ -78,16 +81,16 @@ public class NewProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 new AlertDialog.Builder(NewProfileActivity.this)
-                        .setTitle("Discarding Changes")
-                        .setMessage("Are you sure you want to close this activity?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        .setTitle(getResources().getString(R.string.discard_changes_title))
+                        .setMessage(getResources().getString(R.string.discard_changes_message))
+                        .setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 setResult(Activity.RESULT_CANCELED);
                                 finish();
                             }
                         })
-                        .setNegativeButton("No", null)
+                        .setNegativeButton(getResources().getString(R.string.no), null)
                         .show();
             }
         });
@@ -95,11 +98,19 @@ public class NewProfileActivity extends AppCompatActivity {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int id = createProfile();
-                setResult(Activity.RESULT_OK, getIntent().putExtra("ProfileID", id));
-                finish();
+                if(isRequiredFieldsFilled()) {
+                    int id = createProfile();
+                    setResult(Activity.RESULT_OK, getIntent().putExtra("ProfileID", id));
+                    finish();
+                } else {
+                    Toast.makeText(context, getResources().getString(R.string.required_field_alert), Toast.LENGTH_LONG).show();
+                }
             }
         });
+    }
+
+    private boolean isRequiredFieldsFilled(){
+        return (editTextProfileName.getText().toString() != null && accountTypes.size() > 0);
     }
 
     /**
@@ -108,7 +119,8 @@ public class NewProfileActivity extends AppCompatActivity {
      */
     public int createProfile(){
         String profileName = editTextProfileName.getText().toString();
-        Profile p = new Profile(profileName);
+        String text = editTextUploadText.getText().toString();
+        Profile p = new Profile(profileName, text);
         int count = accountTypes.size();
         for(int i = 0; i < count; i++){
             int accountType = accountTypes.get(i).getSelectedItemPosition() + 1;

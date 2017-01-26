@@ -18,15 +18,17 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String DATABASE_NAME = "Database.db";
     public static final String TABLE_NAME_PROFILE = "PROFILE";
     public static final String TABLE_NAME_PROFILE_CHILD = "ACCOUNT";
-    public static final String COL_PROFILE_ID = "PROFILE_ID";
     public static final String COL_ID = "ID";
     public static final String COL_NAME = "PROFILE_NAME";
+    public static final String COL_TEXT = "TEXT";
+    public static final String COL_PROFILE_ID = "PROFILE_ID";
     public static final String COL_API = "API";
     public static final String COL_ACCOUNT = "ACCOUNT";
     public static final String COL_PASSWORD = "PASSWORD";
 
     private static final String CREATE_TABLES1 = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_PROFILE + "("    + COL_ID + " INTEGER PRIMARY KEY,"
-                                                                                                            + COL_NAME + " TEXT NOT NULL);";
+                                                                                                            + COL_NAME + " TEXT NOT NULL,"
+                                                                                                            + COL_TEXT + " TEXT);";
     private static final String CREATE_TABLES2 =  "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_PROFILE_CHILD + "("  + COL_PROFILE_ID + " INTEGER,"
                                                                                                                 + COL_ID + " INTEGER PRIMARY KEY, "
                                                                                                                 + COL_API + " INTEGER NOT NULL, "
@@ -67,6 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_NAME, p.getName());
+        values.put(COL_TEXT, p.getText());
         db.insert(TABLE_NAME_PROFILE, null, values);
         profileID = getLastInsertedRowID(TABLE_NAME_PROFILE);
 
@@ -130,7 +133,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             do{
                 int id = cursor.getInt(0);
                 String name = cursor.getString(1);
-                Profile profile = new Profile(id, name);
+                String text = cursor.getString(2);
+                Profile profile = new Profile(id, name, text);
                 profile.setAccounts(getAccountsByProfileID(id));
                 profiles.add(profile);
 
@@ -157,10 +161,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public Profile getProfileByID(int id){
         Profile p;
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor profileCursor = db.query(TABLE_NAME_PROFILE, new String[]{COL_ID, COL_NAME}, COL_ID + "=?", new String[]{String.valueOf(id)}, null, null, null,null);
+        Cursor profileCursor = db.query(TABLE_NAME_PROFILE, new String[]{COL_ID, COL_NAME, COL_TEXT}, COL_ID + "=?", new String[]{String.valueOf(id)}, null, null, null,null);
         if(profileCursor.moveToFirst()){
             String profileName = profileCursor.getString(1);
-            p = new Profile(id, profileName);
+            String text = profileCursor.getString(2);
+            p = new Profile(id, profileName, text);
 
             List<Account> accounts = getAccountsByProfileID(id);
             p.setAccounts(accounts);

@@ -25,7 +25,6 @@ android:layout_height="match_parent">
                 android:id="@+id/textView1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Large Text"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
             <ListView
                 android:id="@+id/listView1"
@@ -33,20 +32,23 @@ android:layout_height="match_parent">
                 android:layout_height="wrap_content">
             </ListView>
         </LinearLayout>
-        <Button
+        <ImageButton
             android:id="@+id/buttonAdd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentBottom="true"
-            android:text="Add Button" />
-        <Button
+            android:background="@null"
+            android:src="@drawable/upload96"/>
+        <ImageButton
             android:id="@+id/buttonCamera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
-            android:text="Camera" />
+            android:background="@null"
+            android:src="@drawable/camera96"
+            />
     </RelativeLayout>
     <LinearLayout
         android:layout_height="match_parent"
