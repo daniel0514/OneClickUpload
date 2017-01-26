@@ -15,6 +15,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -25,6 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ExpandableListView;
 
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -38,10 +41,6 @@ import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter.SwipeActionListener;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
-
-
-import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,45 +65,45 @@ public class MainActivity extends AppCompatActivity {
 
     //Activity Variables
     private Context context;
-    int hasPermission_ES_W; //Permission for External Storage Write
+    private int hasPermission_ES_W; //Permission for External Storage Write
+    private List<Profile> profiles;
+    private LinkedList<Upload> uploadsList = new LinkedList<>();
 
     //UI Variables
-        //Buttons
+    //Buttons
     private Button buttonCamera;
     private Button buttonAdd;
-        //Drawers
-    private DrawerLayout layoutDrawer;
-    private ExpandableListView listDrawer;
+    //Drawers
+    private ExpandableListView drawerEListView;
+    private ExpandableListAdapter drawerEListAdapter;
     private ImageButton buttonSetting;
-        //ListView Variables
-    private ListView listUploads;
-    private ArrayAdapter<String> stringAdapter;
-    private ArrayList<String> uploadStrings = new ArrayList<>();
-    private SwipeActionAdapter swipeAdapter;
-        //Drawer Data Variable
-    private ExpandableListAdapter listAdapter;
-        //Database
+    private DrawerLayout drawerLayout;
+    //ListView Variables
+    private ListView listViewUploads;
+    private ArrayAdapter<String> adapterUploads;
+    private ArrayList<String> stringsUploads = new ArrayList<>();
+    private SwipeActionAdapter adapterSwipe;
+    //Database
     private DatabaseHelper db;
 
-    //Upload Queue
-    private LinkedList<Upload> uploadQueue = new LinkedList<>();
-
     //Facebook API
-    LoginManager mLoginManager;
-    CallbackManager mCallbackManager;
-    List<String> facebookPermissions= Arrays.asList("publish_actions");
+    private LoginManager mLoginManager;
+    private CallbackManager mCallbackManager;
+    private List<String> facebookPermissions= Arrays.asList("publish_actions");
 
-    private List<Profile> profiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //Setting up Activity Variables
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_select);
         context = getApplicationContext();
 
+        //Setting up Twitter API
         TwitterAuthConfig authConfig = new TwitterAuthConfig(getResources().getString(R.string.twitterApiID), getResources().getString(R.string.twitterSecretID));
         Fabric.with(this, new Twitter(authConfig), new TweetComposer());
 
+        //Setting up Facebook API
         FacebookSdk.sdkInitialize(context);
         AppEventsLogger.activateApp(getApplication());
         mCallbackManager = CallbackManager.Factory.create();
@@ -112,16 +111,17 @@ public class MainActivity extends AppCompatActivity {
         mLoginManager.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                Log.d("Facebook Login", "Log in successful");
             }
 
             @Override
             public void onCancel() {
-
+                Log.d("Facebook Login", "Log in failed");
             }
 
             @Override
             public void onError(FacebookException error) {
-
+                Log.d("Facebook Login", "Log in Error");
             }
         });
         mLoginManager.logInWithPublishPermissions(this, facebookPermissions);
@@ -138,14 +138,14 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout drawerHeaderImages = (LinearLayout) findViewById(R.id.linearHeaderImages);
 
         //Setup Drawer
-        layoutDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        listDrawer = (ExpandableListView) findViewById(R.id.left_drawer);
-        listAdapter = new ExpandableListAdapter(this, profiles, drawerHeader, drawerHeaderImages);
-        listDrawer.setAdapter(listAdapter);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerEListView = (ExpandableListView) findViewById(R.id.left_drawer);
+        drawerEListAdapter = new ExpandableListAdapter(this, profiles, drawerHeader, drawerHeaderImages);
+        drawerEListView.setAdapter(drawerEListAdapter);
 
 
         //Setup Main Screen List
-        listUploads = (ListView) findViewById(R.id.listView1);
+        listViewUploads = (ListView) findViewById(R.id.listView1);
         setUpSwipeList();
 
         buttonCamera = (Button) findViewById(R.id.buttonCamera);
@@ -162,15 +162,15 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setUpSwipeList(){
         //Setup the String Adapter to contain the strings of the list
-        stringAdapter = new ArrayAdapter<>(
+        adapterUploads = new ArrayAdapter<>(
                 this,
                 R.layout.row_big,
                 R.id.text,
-                uploadStrings
+                stringsUploads
         );
         //Setup the Swipe Adapter to handle swipe actions to elements of the list
-        swipeAdapter = new SwipeActionAdapter(stringAdapter);
-        swipeAdapter.setSwipeActionListener(new SwipeActionListener(){
+        adapterSwipe = new SwipeActionAdapter(adapterUploads);
+        adapterSwipe.setSwipeActionListener(new SwipeActionListener(){
             // Return true for directions for permitted swipe
             // Return false to forbid swipes for certain direction.
             @Override
@@ -189,34 +189,29 @@ public class MainActivity extends AppCompatActivity {
                 for(int i=0;i<positionList.length;i++) {
                     SwipeDirection direction = directionList[i];
                     int position = positionList[i];
-                    String dir = "";
 
                     switch (direction) {
                         case DIRECTION_FAR_LEFT:
-                            dir = "Far left";
                             startUpload(position);
                             break;
                         case DIRECTION_NORMAL_LEFT:
-                            dir = "Left";
                             break;
                         case DIRECTION_FAR_RIGHT:
-                            dir = "Far right";
-                            uploadQueue.remove(position);
-                            uploadStrings.remove(position);
+                            uploadsList.remove(position);
+                            stringsUploads.remove(position);
                             break;
                         case DIRECTION_NORMAL_RIGHT:
-                            dir = "Right";
                             break;
                     }
-                    swipeAdapter.notifyDataSetChanged();
+                    adapterSwipe.notifyDataSetChanged();
                 }
             }
         });
-        swipeAdapter.setDimBackgrounds(true);
-        swipeAdapter.setListView(listUploads);
-        listUploads.setAdapter(swipeAdapter);
+        adapterSwipe.setDimBackgrounds(true);
+        adapterSwipe.setListView(listViewUploads);
+        listViewUploads.setAdapter(adapterSwipe);
         // Set the background of the swipe directions
-        swipeAdapter.addBackground(SwipeDirection.DIRECTION_FAR_LEFT,R.layout.row_bg_left)
+        adapterSwipe.addBackground(SwipeDirection.DIRECTION_FAR_LEFT,R.layout.row_bg_left)
                 .addBackground(SwipeDirection.DIRECTION_FAR_RIGHT,R.layout.row_bg_right);
     }
 
@@ -269,11 +264,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Start the Activity Page for Settings
+     */
     public void startSettingIntent(View view){
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Start the Activity Page for adding new profiles
+     */
     public void startNewProfileIntent(View view){
         Intent intent = new Intent(this, NewProfileActivity.class);
         startActivityForResult(intent, REQUEST_PROFILE);
@@ -365,33 +366,36 @@ public class MainActivity extends AppCompatActivity {
                 if(resultCode == RESULT_OK){
                     if(data != null && data.getData() != null){
                         Uri selectedImageUri = data.getData();
-                        Upload upload = new Upload(profiles.get(listAdapter.getSelectedIndex()), selectedImageUri);
-                        uploadQueue.add(upload);
-                        uploadStrings.add(getResources().getString(R.string.initial_upload_string) + " with Profile: " + upload.getProfile().getName());
-                        stringAdapter.notifyDataSetChanged();
+                        Upload upload = new Upload(profiles.get(drawerEListAdapter.getSelectedIndex()), selectedImageUri);
+                        uploadsList.add(upload);
+                        stringsUploads.add(getResources().getString(R.string.initial_upload_string) + " with Profile: " + upload.getProfile().getName());
+                        adapterUploads.notifyDataSetChanged();
                     }
                 }
                 return;
             }
+            //Handles the intent result of creating new profile
             case REQUEST_PROFILE: {
                 if(resultCode == RESULT_OK){
                     if(data != null){
                         int profileID = data.getIntExtra("ProfileID", -1);
                         Profile p = db.getProfileByID(profileID);
-                        listAdapter.addProfile(p);
+                        drawerEListAdapter.addProfile(p);
                     }
                 }
                 return;
             }
+            //Handles the intent result of tweeting selected photo
             case TWEET_CODE: {
                 int index = 0;
                 double minTimeStamp = Double.MAX_VALUE;
-                Upload upload = null;
-                for (int i = 0; i < uploadQueue.size(); i++) {
-                    upload = uploadQueue.get(i);
-                    if (!upload.isUploadComplete() && upload.getStartTime() < minTimeStamp) {
+                Upload upload;
+                //Get the earliest unfinished upload
+                for (int i = 0; i < uploadsList.size(); i++) {
+                    upload = uploadsList.get(i);
+                    if (!upload.isUploadComplete() && upload.getStartTime() != null && upload.getStartTime() < minTimeStamp) {
                         index = i;
-                        minTimeStamp = uploadQueue.get(i).getStartTime();
+                        minTimeStamp = uploadsList.get(i).getStartTime();
                     }
                 }
                 if(resultCode == RESULT_OK) {
@@ -401,12 +405,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        //Handles result of posting photo on facebook
         mCallbackManager.onActivityResult(requestCode, resultCode, data);
         return;
     }
 
+    /**
+     * Starts the selected upload based on selected profile
+     * @param index : the index of selected upload task in the upload list
+     */
     private void startUpload(int index){
-        Upload upload = uploadQueue.get(index);
+        Upload upload = uploadsList.get(index);
         upload.setStartTime();
         for(Account a : upload.getProfile().getAccounts()){
             switch(a.getAccountType()){
@@ -420,7 +429,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Tweet a photo using the Twitter API
+     * @param uri   : URI of the selected image
+     * @param index : Index of the selected upload task in the upload list view
+     */
     private void publishPhotoToTwitter(Uri uri, final int index){
+        //Update the text on the listview to Twitter Status: Uploading
         updateText(index, Account.TWITTER_ACCOUNT, Upload.UPLOADING);
         Intent tweetIntent = new TweetComposer.Builder(this)
                 .text("TestUpload")
@@ -429,9 +444,16 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(tweetIntent, TWEET_CODE);
     }
 
+    /**
+     *  Post a Facebook photo using Facebook API
+     * @param uri   : URI of the selected image
+     * @param index : Index of the selected upload task ni the upload list view
+     */
     private void publishPhotoToFacebook(Uri uri, final int index){
         final int position = index;
+        //Update the text on the listview to Facebook Status: Uploading
         updateText(index, Account.FACEBOOK_ACCOUNT, Upload.UPLOADING);
+        //Get the bitmap of the image through the URI
         Bitmap bitmap = getBitmap(uri);
         SharePhoto photo = new SharePhoto.Builder()
                 .setBitmap(bitmap)
@@ -444,6 +466,7 @@ public class MainActivity extends AppCompatActivity {
         ShareApi.share(content, new FacebookCallback<Sharer.Result>() {
             @Override
             public void onSuccess(Sharer.Result result) {
+                //Update the text on the listview to Facebook Status: Uploaded
                 setCompleted(position, Account.FACEBOOK_ACCOUNT);
             }
 
@@ -459,16 +482,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Set the text on the listview to Status: Uploaded. If all tasks are complete within a Upload
+     * Change the text to Photo Uploaded to All Accounts
+     * @param index         : Index of the listview
+     * @param accountType   : Which account status to update
+     */
     private void setCompleted(int index, int accountType){
         updateText(index, accountType, Upload.UPLOADED);
-        uploadQueue.get(index).setUploaded(accountType, Boolean.valueOf(true));
-        if(uploadQueue.get(index).isUploadComplete()){
+        uploadsList.get(index).setUploaded(accountType, Boolean.valueOf(true));
+        if(uploadsList.get(index).isUploadComplete()){
             updateText(index, Account.ALL_ACCOUNTS, Upload.UPLOADED);
         }
     }
 
+    /**
+     * Update the text on the listview
+     * @param position      : The index of the uploads in the listview
+     * @param accountType   : Which account status to update
+     * @param status        : Which status to update to (Uploaded, Uploading, Failed)
+     */
     private void updateText(int position, int accountType, int status){
-        String oldString = uploadStrings.get(position);
+        String oldString = stringsUploads.get(position);
         String newString = oldString;
         if(accountType == Account.ALL_ACCOUNTS && status == Upload.UPLOADED) {
             newString = newString + "\n" + getResources().getString(R.string.all_uploaded);
@@ -499,8 +534,8 @@ public class MainActivity extends AppCompatActivity {
                 newString = oldString.replace(getResources().getString(R.string.start_twitter_upload), getResources().getString(R.string.failed_twitter_upload));
             }
         }
-        uploadStrings.set(position, newString);
-        stringAdapter.notifyDataSetChanged();
+        stringsUploads.set(position, newString);
+        adapterUploads.notifyDataSetChanged();
     }
 
     /**

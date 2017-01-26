@@ -1,24 +1,42 @@
 package com.oneclickupload.danielhsiao.oneclickupload;
 
+
 /**
- * Created by Daniel Hsiao on 2017-01-17.
+ * Account Class to host information of Social Media Account in a profile
  */
 
 public class Account{
     public final static int FACEBOOK_ACCOUNT = 1;
     public final static int TWITTER_ACCOUNT = 2;
     public final static int ALL_ACCOUNTS = 0;
-    private Integer id;
-    private String account_id;
-    private String password;
+    //The type of social media account
     private int accountType;
 
+    private Integer id;
+    //Account Username and Password for login. Not used now
+    private String account_id;
+    private String password;
+
+    /**
+     * Constructor for Account Class. Used to create an account before persistence.
+     * Account ID is not yet assigned by the database
+     * @param accountType   : Type of social media account
+     * @param account_id    : Account Username
+     * @param password      : Account Password
+     */
     public Account(int accountType, String account_id, String password){
         this.accountType = accountType;
         this.account_id = account_id;
         this.password = password;
     }
 
+    /**
+     * Constructor for Account Class. Used to create an account that is already in the database
+     * @param id            : Account ID in the database
+     * @param accountType   : Type of social media account
+     * @param account_id    : Account Username
+     * @param password      : Account Password
+     */
     public Account(int id, int accountType, String account_id, String password){
         this.id = id;
         this.accountType = accountType;
@@ -42,6 +60,11 @@ public class Account{
         return password;
     }
 
+    /**
+     * Return the Name of the Social Media the account is belonged to
+     * @param id
+     * @return
+     */
     public String getAPIName(int id){
         switch(id){
             case(FACEBOOK_ACCOUNT):

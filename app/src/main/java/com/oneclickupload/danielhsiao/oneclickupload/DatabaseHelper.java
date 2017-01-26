@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Daniel Hsiao on 2017-01-15.
+ * Database Class to access the database in the app
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String DATABASE_NAME = "Database.db";
     public static final String TABLE_NAME_PROFILE = "PROFILE";
-    public static final String TABLE_NAME_PROFILE_CHILD = "PROFILE_CHILD";
+    public static final String TABLE_NAME_PROFILE_CHILD = "ACCOUNT";
     public static final String COL_PROFILE_ID = "PROFILE_ID";
     public static final String COL_ID = "ID";
     public static final String COL_NAME = "PROFILE_NAME";
@@ -35,15 +35,18 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                                                                                                                 + " CONSTRAINT fk_profile_id FOREIGN KEY(" + COL_ID + ") " +
                                                                                                                                             "REFERENCES " + TABLE_NAME_PROFILE + "(" + COL_ID + "));";
 
+    /**
+     * Constructor of the DatabaseHelper class
+     * @param context : Application Context
+     */
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
-        SQLiteDatabase db = this.getWritableDatabase();
     }
 
-    public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler) {
-        super(context, name, factory, version, errorHandler);
-    }
-
+    /**
+     * Method to be called when the class is created
+     * @param db    :   The database object
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLES1);
@@ -54,6 +57,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
+    /**
+     * Method to add a newly created profile to the database for persistence
+     * @param p : The profile to be added
+     * @return  : The profile ID in the database
+     */
     public Integer addProfile(Profile p){
         Integer profileID = null;
         SQLiteDatabase db = this.getWritableDatabase();
@@ -69,6 +77,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return profileID;
     }
 
+    /**
+     * Get the latest autoincremented ID of the table
+     * @param table : The table of the Last Inserted Row
+     * @return  : The ID
+     */
     private Integer getLastInsertedRowID(String table){
         Integer id = null;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -80,6 +93,12 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return id;
     }
 
+    /**
+     * Method to add a newly created account to the database for persistence
+     * @param a             : The account to be added
+     * @param profile_ID    : the profile ID that account belongs to.
+     * @return
+     */
     public Integer addAccount(Account a, int profile_ID){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -98,6 +117,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return id;
     }
 
+    /**
+     * Get all the profile information from the database and unmarshall them into objects
+     * @return  : The list of all profiles in the database
+     */
     public List<Profile> getProfiles(){
         List<Profile> profiles = new ArrayList<Profile>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -116,12 +139,21 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return profiles;
     }
 
+    /**
+     * Get the profile last inserted into the database
+     * @return  : The profile
+     */
     public Profile getLastInsertedProfile(){
         int profileID = getLastInsertedRowID(TABLE_NAME_PROFILE);
         Profile p = getProfileByID(profileID);
         return p;
     }
 
+    /**
+     * Get the profile based on profile ID
+     * @param id    : The ID of the profile to be retrieved
+     * @return      : The profile
+     */
     public Profile getProfileByID(int id){
         Profile p;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -138,6 +170,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
     }
 
+    /**
+     * Get the accounts information from the databased of a certain profile and unmarshall the accounts into objects
+     * @param profileID : The profile ID the accounts belong to
+     * @return          : A list of accounts
+     */
     public List<Account> getAccountsByProfileID(int profileID){
         SQLiteDatabase db = this.getReadableDatabase();
         List<Account> accounts = new ArrayList<>();

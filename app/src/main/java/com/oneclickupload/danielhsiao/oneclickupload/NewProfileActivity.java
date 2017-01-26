@@ -19,39 +19,49 @@ import android.widget.Spinner;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  Activity Class for launching the new profile screen
+ */
 public class NewProfileActivity extends AppCompatActivity {
-    Context context;
-    ImageButton buttonAdd;
-    Button buttonCancel;
-    Button buttonSave;
-    EditText editTextProfileName;
-    LinearLayout scrollLinear;
-    List<Spinner> accountTypes = new ArrayList<>();
-    List<EditText> accountIDs = new ArrayList<>();
-    List<EditText> passwords = new ArrayList<>();
-    DatabaseHelper db;
+    private Context context;
+    private ImageButton buttonAdd;
+    private Button buttonCancel;
+    private Button buttonSave;
+    private EditText editTextProfileName;
+    private LinearLayout scrollLinear;
+    private List<Spinner> accountTypes = new ArrayList<>();
+    private List<EditText> accountIDs = new ArrayList<>();
+    private List<EditText> passwords = new ArrayList<>();
+    private DatabaseHelper db;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Method to be called when the activity is created
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_profile);
+        //Setting Variables
         context = getApplicationContext();
         buttonAdd = (ImageButton) findViewById(R.id.addAccountButton);
         buttonCancel = (Button) findViewById(R.id.buttonCancel);
         buttonSave = (Button) findViewById(R.id.buttonSave);
         editTextProfileName = (EditText) findViewById(R.id.editText);
         scrollLinear = (LinearLayout) findViewById(R.id.linearScrollView);
+        //Database for persistence
         db = new DatabaseHelper(context);
 
-
+        //Button to Add a new Account in the profile
         buttonAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Get the inflator from the System Service to inflate a view
                 LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View view = inflater.inflate(R.layout.list_account_item, null);
                 Spinner accountType = (Spinner) view.findViewById(R.id.spinnerAccount);
@@ -63,6 +73,7 @@ public class NewProfileActivity extends AppCompatActivity {
                 scrollLinear.addView(view);
             }
         });
+        //Cancel button for exiting the activity
         buttonCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,6 +91,7 @@ public class NewProfileActivity extends AppCompatActivity {
                         .show();
             }
         });
+        //Save the newly created profile into the database
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,6 +102,10 @@ public class NewProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Read the data from the spinners and textviews and create a new profile
+     * @return  : The ID of the persisted profile
+     */
     public int createProfile(){
         String profileName = editTextProfileName.getText().toString();
         Profile p = new Profile(profileName);
@@ -101,6 +117,7 @@ public class NewProfileActivity extends AppCompatActivity {
             Account a = new Account(accountType, accountID, password);
             p.addAccount(a);
         }
+        //Persist the profile
         int profileID = db.addProfile(p);
         return profileID;
     }
