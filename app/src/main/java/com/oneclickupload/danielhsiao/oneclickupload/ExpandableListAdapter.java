@@ -65,9 +65,10 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         notifyDataSetChanged();
     }
 
-    public void setProfiles(List<Profile> profiles){
+    public int setProfiles(List<Profile> profiles){
         this.profiles = profiles;
         notifyDataSetChanged();
+        return this.profiles.size();
     }
 
     /**

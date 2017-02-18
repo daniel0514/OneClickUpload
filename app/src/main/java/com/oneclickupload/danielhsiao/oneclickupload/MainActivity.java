@@ -80,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     private ExpandableListAdapter drawerEListAdapter;
     private ImageButton buttonSetting;
     private DrawerLayout drawerLayout;
+    TextView drawerHeader;
+    LinearLayout drawerHeaderImages;
     //ListView Variables
     private ListView listViewUploads;
     private ArrayAdapter<String> adapterUploads;
@@ -135,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
         db = new DatabaseHelper(context);
         profiles = db.getProfiles();
 
-        TextView drawerHeader = (TextView) findViewById(R.id.selectedProfile);
-        LinearLayout drawerHeaderImages = (LinearLayout) findViewById(R.id.linearHeaderImages);
+        drawerHeader = (TextView) findViewById(R.id.selectedProfile);
+        drawerHeaderImages = (LinearLayout) findViewById(R.id.linearHeaderImages);
 
         //Setup Drawer
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -420,7 +422,11 @@ public class MainActivity extends AppCompatActivity {
             //Handles the intent result of editing profiles
             case REQUEST_EDIT_PROFILES: {
                 if(resultCode == RESULT_OK) {
-                    drawerEListAdapter.setProfiles(db.getProfiles());
+                    int rowCount = drawerEListAdapter.setProfiles(db.getProfiles());
+                    if(rowCount == 0){
+                        drawerHeader.setText("");
+                        drawerHeaderImages.removeAllViews();
+                    }
                 }
             }
         }
