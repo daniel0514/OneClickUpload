@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 103;
     private static final int REQUEST_PROFILE = 104;
     private static final int TWEET_CODE = 105;
+    private static final int REQUEST_EDIT_PROFILES = 106;
 
     //Activity Variables
     private Context context;
@@ -277,7 +278,13 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
-
+    /**
+     * Start the Activity Page for Editing profiles
+     */
+    public void startEditProfilesIntent(View view){
+        Intent intent = new Intent(this, ProfilesActivity.class);
+        startActivityForResult(intent, REQUEST_EDIT_PROFILES);
+    }
     /**
      * Start the Activity Page for adding new profiles
      */
@@ -408,6 +415,12 @@ public class MainActivity extends AppCompatActivity {
                     setCompleted(index, Account.TWITTER_ACCOUNT);
                 } else if(resultCode == RESULT_CANCELED){
                     updateText(index, Account.TWITTER_ACCOUNT, Upload.FAILED);
+                }
+            }
+            //Handles the intent result of editing profiles
+            case REQUEST_EDIT_PROFILES: {
+                if(resultCode == RESULT_OK) {
+                    drawerEListAdapter.setProfiles(db.getProfiles());
                 }
             }
         }

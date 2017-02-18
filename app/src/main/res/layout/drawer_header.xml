@@ -23,6 +23,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="20dp"
+            android:src="@drawable/edit24"
+            android:id="@+id/editProfileButton"
+            android:background="@null"
+            android:onClick="startEditProfilesIntent"
+            android:layout_toStartOf="@+id/addProfileButton" />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
             android:src="@drawable/addlist24"
             android:id="@+id/addProfileButton"
             android:background="@null"

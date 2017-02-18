@@ -44,6 +44,7 @@
             android:value="@string/twitterApiID" />
 
         <activity android:name=".NewProfileActivity" />
+        <activity android:name=".ProfilesActivity" />
 
         <provider
             android:name="com.facebook.FacebookContentProvider"

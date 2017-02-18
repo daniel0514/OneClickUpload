@@ -1,5 +1,6 @@
 package com.oneclickupload.danielhsiao.oneclickupload;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -61,6 +62,11 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
      */
     public void addProfile(Profile p){
         profiles.add(p);
+        notifyDataSetChanged();
+    }
+
+    public void setProfiles(List<Profile> profiles){
+        this.profiles = profiles;
         notifyDataSetChanged();
     }
 

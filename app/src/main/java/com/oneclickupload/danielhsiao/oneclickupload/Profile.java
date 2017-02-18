@@ -16,6 +16,8 @@ public class Profile {
     private List<Account> accounts;
     //Post Text
     private String text;
+    //Is profile Modified
+    private Boolean isModified = false;
 
     /**
      * Constructor for profile that is already in the database
@@ -86,5 +88,12 @@ public class Profile {
 
     public Account getAccount(int position){
         return accounts.get(position);
+    }
+
+    public Boolean isModified(){
+        return isModified;
+    }
+    public void setIsModified(Boolean isModified){
+        this.isModified = isModified;
     }
 }

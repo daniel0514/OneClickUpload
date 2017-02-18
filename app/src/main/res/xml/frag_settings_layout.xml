@@ -6,5 +6,7 @@
     <SwitchPreference android:title="Automatically Upload"
         android:summary="Automatically Upload Photo when Task is Created"
         android:key="autoupload"/>
-    <Preference android:title="Manage Profiles"></Preference>
+    <SwitchPreference android:title="Wifi Upload Only"
+        android:summary="Only Allow Upload when Connected to Wifi"
+        android:key="wifiupload"/>
 </PreferenceScreen>

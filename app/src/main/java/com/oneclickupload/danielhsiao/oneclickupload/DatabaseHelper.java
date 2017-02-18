@@ -195,4 +195,26 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
         return accounts;
     }
+
+    public void removeProfile(Profile p){
+        try {
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.delete(TABLE_NAME_PROFILE_CHILD, COL_PROFILE_ID + "=?", new String[]{Integer.toString(p.getProfileID())});
+            db.delete(TABLE_NAME_PROFILE, COL_ID + "=?", new String[]{Integer.toString(p.getProfileID())});
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void updateProfile(Profile p){
+        try {
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(COL_NAME, p.getName());
+            values.put(COL_TEXT, p.getText());
+            db.update(TABLE_NAME_PROFILE, values, COL_ID + "=?", new String[]{Integer.toString(p.getProfileID())});
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
 }
