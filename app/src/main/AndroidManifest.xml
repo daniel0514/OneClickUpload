@@ -38,8 +38,7 @@
             android:value="@string/facebookApiID" />
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="@string/twitterApiID"
-            />
+            android:value="@string/twitterApiID" />
         <meta-data
             android:name="com.crashlytics.ApiKey"
             android:value="@string/twitterApiID" />
@@ -51,7 +50,8 @@
             android:authorities="com.facebook.app.FacebookContentProvider1234"
             android:exported="true" />
 
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".SettingsActivity"
+            android:label="Settings"></activity>
     </application>
 
 </manifest>

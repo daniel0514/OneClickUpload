@@ -1,6 +1,8 @@
 package com.oneclickupload.danielhsiao.oneclickupload;
 
 import android.Manifest;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,7 +20,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -90,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
     private LoginManager mLoginManager;
     private CallbackManager mCallbackManager;
     private List<String> facebookPermissions= Arrays.asList("publish_actions");
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
