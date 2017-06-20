@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable;
  * Created by Daniel Hsiao on 2017-06-19.
  */
 
-class ItemAccount {
+public class ItemAccount {
     private boolean checked;
     private Drawable itemDrawable;
     private String itemString;

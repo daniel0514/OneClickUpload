@@ -1,8 +1,6 @@
 package com.oneclickupload.danielhsiao.oneclickupload;
 
 import android.Manifest;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,7 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ExpandableListView;
 
-import com.facebook.FacebookSdk;
+import com.facebook.AccessToken;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -107,27 +105,30 @@ public class MainActivity extends AppCompatActivity {
         Fabric.with(this, new Twitter(authConfig), new TweetComposer());
 
         //Setting up Facebook API
-        FacebookSdk.sdkInitialize(context);
-        AppEventsLogger.activateApp(getApplication());
-        mCallbackManager = CallbackManager.Factory.create();
-        mLoginManager = LoginManager.getInstance();
-        mLoginManager.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                Log.d("Facebook Login", "Log in successful");
-            }
+        if(AccessToken.getCurrentAccessToken() == null || AccessToken.getCurrentAccessToken().isExpired()){
+            AppEventsLogger.activateApp(getApplication());
+            mCallbackManager = CallbackManager.Factory.create();
+            mLoginManager = LoginManager.getInstance();
+            mLoginManager.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    logError("Facebook Login", "Log in successfully");
+                    Log.d("Facebook Login", "Log in successful");
+                }
 
-            @Override
-            public void onCancel() {
-                Log.d("Facebook Login", "Log in failed");
-            }
+                @Override
+                public void onCancel() {
+                    logError("Facebook Login", "Log in failed");
+                }
 
-            @Override
-            public void onError(FacebookException error) {
-                Log.d("Facebook Login", "Log in Error");
-            }
-        });
-        mLoginManager.logInWithPublishPermissions(this, facebookPermissions);
+                @Override
+                public void onError(FacebookException error) {
+                    logError("Facebook Login", "Log in Error");
+                }
+            });
+            mLoginManager.logInWithPublishPermissions(this, facebookPermissions);
+        }
+
 
 
         //Check if App has permission
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
         initializeButton(buttonSetting, R.id.buttonSetting);
 
     }
+
 
     /**
      *  The main method to set up the Swipe Action List that contains the upload list
@@ -478,6 +480,9 @@ public class MainActivity extends AppCompatActivity {
      * @param text : Text of the photo
      */
     private void publishPhotoToFacebook(Uri uri, final int index, String text){
+        if(AccessToken.getCurrentAccessToken() == null || AccessToken.getCurrentAccessToken().isExpired() || !AccessToken.getCurrentAccessToken().getPermissions().contains("publish_actions")){
+            mLoginManager.logInWithPublishPermissions(this, facebookPermissions);
+        }
         final int position = index;
         //Update the text on the listview to Facebook Status: Uploading
         updateText(index, Account.FACEBOOK_ACCOUNT, Upload.UPLOADING);
@@ -496,18 +501,26 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Sharer.Result result) {
                 //Update the text on the listview to Facebook Status: Uploaded
                 setCompleted(position, Account.FACEBOOK_ACCOUNT);
+                logError("Facebook Upload", "Successful");
             }
 
             @Override
             public void onCancel() {
-
+                updateText(position, Account.FACEBOOK_ACCOUNT, Upload.FAILED);
+                logError("Facebook Upload", "Cancelled");
             }
 
             @Override
             public void onError(FacebookException error) {
-
+                updateText(position, Account.FACEBOOK_ACCOUNT, Upload.FAILED);
+                logError("Facebook Upload", "Failed" + " " + error.getMessage());
             }
         });
+    }
+
+    private void logError(String tag, String error){
+        Log.d(tag, error);
+        System.out.println(tag + " " + error);
     }
 
     /**
