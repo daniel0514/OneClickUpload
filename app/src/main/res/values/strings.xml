@@ -2,9 +2,13 @@
     <string name="app_name">OneClickUpload</string>
     <string name="title_activity_settings">Settings</string>
 
+    <array name="accountIcons">
+        <item>@drawable/facebookon</item>
+        <item>@drawable/twitteron</item>
+    </array>
     <string-array name="accountType">
-        <item>1. Facebook</item>
-        <item>2. Twitter</item>
+        <item>Facebook</item>
+        <item>Twitter</item>
     </string-array>
 
     <string name="yes">Yes</string>

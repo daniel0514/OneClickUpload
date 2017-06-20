@@ -3,17 +3,17 @@ package com.oneclickupload.danielhsiao.oneclickupload;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -25,15 +25,13 @@ import java.util.List;
  */
 public class NewProfileActivity extends AppCompatActivity {
     private Context context;
-    private ImageButton buttonAdd;
     private Button buttonCancel;
     private Button buttonSave;
     private EditText editTextProfileName;
     private EditText editTextUploadText;
-    private LinearLayout scrollLinear;
-    private List<Spinner> accountTypes = new ArrayList<>();
-    private List<EditText> accountIDs = new ArrayList<>();
-    private List<EditText> passwords = new ArrayList<>();
+    private ListView accountListView;
+    private List<ItemAccount> accountItems = new ArrayList<>();
+    private ItemsAccountListAdapter itemsAccountListAdapter;
     private DatabaseHelper db;
 
     @Override
@@ -51,31 +49,20 @@ public class NewProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_new_profile);
         //Setting Variables
         context = getApplicationContext();
-        buttonAdd = (ImageButton) findViewById(R.id.addAccountButton);
         buttonCancel = (Button) findViewById(R.id.buttonCancel);
         buttonSave = (Button) findViewById(R.id.buttonSave);
         editTextProfileName = (EditText) findViewById(R.id.editText);
         editTextUploadText = (EditText) findViewById(R.id.editTextText);
-        scrollLinear = (LinearLayout) findViewById(R.id.linearScrollView);
+        accountListView = (ListView) findViewById(R.id.accountListView);
         //Database for persistence
         db = new DatabaseHelper(context);
 
-        //Button to Add a new Account in the profile
-        buttonAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Get the inflator from the System Service to inflate a view
-                LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View view = inflater.inflate(R.layout.list_account_item, null);
-                Spinner accountType = (Spinner) view.findViewById(R.id.spinnerAccount);
-                EditText accountID = (EditText) view.findViewById(R.id.editTextAccountID);
-                EditText password = (EditText) view.findViewById(R.id.editTextPassword);
-                accountTypes.add(accountType);
-                accountIDs.add(accountID);
-                passwords.add(password);
-                scrollLinear.addView(view);
-            }
-        });
+        //Initialize Accounts Checkboxes
+        initAccountItems();
+        itemsAccountListAdapter = new ItemsAccountListAdapter(this, accountItems);
+        accountListView.setAdapter(itemsAccountListAdapter);
+
+
         //Cancel button for exiting the activity
         buttonCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,7 +97,14 @@ public class NewProfileActivity extends AppCompatActivity {
     }
 
     private boolean isRequiredFieldsFilled(){
-        return (editTextProfileName.getText().toString() != null && accountTypes.size() > 0);
+        return (editTextProfileName.getText().toString() != null && isAnyAccountTypeSelected());
+    }
+
+    private boolean isAnyAccountTypeSelected(){
+        for(ItemAccount i : accountItems){
+            if(i.isChecked()) return true;
+        }
+        return false;
     }
 
     /**
@@ -121,16 +115,26 @@ public class NewProfileActivity extends AppCompatActivity {
         String profileName = editTextProfileName.getText().toString();
         String text = editTextUploadText.getText().toString();
         Profile p = new Profile(profileName, text);
-        int count = accountTypes.size();
-        for(int i = 0; i < count; i++){
-            int accountType = accountTypes.get(i).getSelectedItemPosition() + 1;
-            String accountID = accountIDs.get(i).getText().toString();
-            String password = passwords.get(i).getText().toString();
-            Account a = new Account(accountType, accountID, password);
-            p.addAccount(a);
+        for (int i = 0; i < accountItems.size(); i++){
+            if(accountItems.get(i).isChecked()){
+                int accountType = i + 1;
+                Account a = new Account(accountType, "", "");
+                p.addAccount(a);
+            }
         }
         //Persist the profile
         int profileID = db.addProfile(p);
         return profileID;
+    }
+
+    private void initAccountItems(){
+        TypedArray arrayDrawables = getResources().obtainTypedArray(R.array.accountIcons);
+        TypedArray arrayText = getResources().obtainTypedArray(R.array.accountType);
+        for(int i = 0; i < arrayDrawables.length(); i++){
+            ItemAccount item = new ItemAccount(false, arrayDrawables.getDrawable(i), arrayText.getString(i));
+            accountItems.add(item);
+        }
+        arrayDrawables.recycle();
+        arrayText.recycle();
     }
 }

@@ -12,72 +12,60 @@
     android:orientation="vertical">
     <!-- Prevent First EditText from gaining focus-->
     <LinearLayout
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:layout_width="0px"
-        android:layout_height="0px"/>
-
-    <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
         android:weightSum="10">
-        <TextView
-            android:text="@string/newProfileName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textProfileName" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:ems="10"
-            android:id="@+id/editText" />
-        <TextView
-            android:text="@string/newProfileText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textText" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:ems="10"
-            android:id="@+id/editTextText" />
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:weightSum="20">
-            <TextView
-                android:text="@string/newProfileAccount"
-                android:layout_width="0dp"
-                android:layout_height="24dp"
-                android:id="@+id/textAccounts"
-                android:layout_weight="18"/>
 
-            <ImageButton
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:src="@drawable/addlist24"
-                android:id="@+id/addAccountButton"
-                android:background="@null"
-                android:layout_alignParentRight="true"
-                android:layout_weight="2"/>
+        <TextView
+            android:id="@+id/textProfileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/newProfileName" />
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/textText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/newProfileText" />
+
+        <EditText
+            android:id="@+id/editTextText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="20">
+
+            <TextView
+                android:id="@+id/textAccounts"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:text="@string/newProfileAccount" />
+
         </LinearLayout>
-        <ScrollView
+
+        <ListView
+            android:id="@+id/accountListView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="10"
             android:fillViewport="true">
-            <LinearLayout
-                android:id="@+id/linearScrollView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"></LinearLayout>
-        </ScrollView>
+        </ListView>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -88,13 +76,21 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Cancel"/>
+                android:text="Cancel" />
+
             <Button
                 android:id="@+id/buttonSave"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Save"/>
+                android:text="Save" />
         </LinearLayout>
     </LinearLayout>
+
+    <LinearLayout
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:layout_width="0px"
+        android:layout_height="0px"/>
+
 </LinearLayout>
