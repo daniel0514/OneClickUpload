@@ -13,9 +13,11 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 
 /**
@@ -43,7 +45,9 @@ public class NewProfileActivityTest {
         onView(withText("Please enter all required fields"))
                 .inRoot((withDecorView(not(mNewActivityTestRule.getActivity().getWindow().getDecorView()))))
                 .check(matches(isDisplayed()));
-}
+        onView(allOf(withId(R.id.rowCheckBox), hasSibling(withText("Facebook")))).perform(click());
+        onView(withId(R.id.buttonSave)).perform(click());
+    }
 
 
 }

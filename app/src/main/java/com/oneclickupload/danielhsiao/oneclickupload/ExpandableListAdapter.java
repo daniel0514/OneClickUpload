@@ -213,11 +213,12 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         for(Account a : profiles.get(selectedIndex).getAccounts()){
             ImageView imageView = new ImageView(context);
             if(a.getAccountType() == Account.FACEBOOK_ACCOUNT){
-                imageView.setBackgroundResource(R.drawable.facebookon);
+                imageView.setImageResource(R.drawable.facebookon);
             } else if(a.getAccountType() == Account.TWITTER_ACCOUNT){
-                imageView.setBackgroundResource(R.drawable.twitteron);
+                imageView.setImageResource(R.drawable.twitteron);
             }
             imageView.setLayoutParams(new LinearLayout.LayoutParams(100, 100, 1));
+            imageView.setPadding(10, 10, 10, 10);
             headerImages.addView(imageView);
         }
     }

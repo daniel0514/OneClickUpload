@@ -217,4 +217,13 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             ex.printStackTrace();
         }
     }
+    public void deleteDatabase() {
+        try {
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.execSQL("DELETE FROM  " + TABLE_NAME_PROFILE_CHILD);
+            db.execSQL("DELETE FROM  " + TABLE_NAME_PROFILE);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
 }
